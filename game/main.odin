@@ -1,5 +1,6 @@
 package game
 
+import "core:math/rand"
 import "core:fmt"
 import "core:math"
 import "core:time"
@@ -9,22 +10,6 @@ import rl "vendor:raylib"
 // whether a component already exists. It will
 // add a new one and overlay the old. This isn't
 // good. Make sure it deletes old component
-
-TileType :: enum {
-	None,
-	Dirt,
-	Grass
-}
-
-Tile :: struct {
-	type : TileType
-}
-
-Map :: struct {
-	width : i32,
-	height : i32,
-	tiles : []Tile,
-}
 
 Settings :: struct {
 	window_width  : i32,
@@ -45,9 +30,11 @@ g_renderer : Renderer
 g_sprites : [SpriteType]Sprite
 g_settings : Settings
 
-g_main_camera : rl.Camera2D
+g_camera : rl.Camera2D
 g_ecs : Ecs
 g_map : Map
+
+g_player : Entity_Handle
 
 g_dt : f32
 
@@ -56,7 +43,7 @@ DEBUG_DRAW_COLLIDERS :: true
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
 	t := add_transform_component(e, {
-		pos = {10.0, 10.0},
+		pos = {0.0, 0.0},
 		rot = 0.0,
 		size = {1.0, 1.0}
 	})
@@ -72,7 +59,7 @@ create_player :: proc() -> Entity_Handle {
 
 	add_control_component(e, {
 		transform = t,
-		speed = 10.0,
+		speed = 3.0,
 	})
 	add_camera_component(e, {
 		transform = t,
@@ -172,7 +159,6 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 			cos * proj_dir_screen.x - sin * proj_dir_screen.y,
 			sin * proj_dir_screen.x + cos * proj_dir_screen.y
 		}
-
 		create_projectile(t.pos, proj_dir_world, 10.0, 5.0)
 	}
 }
@@ -186,9 +172,6 @@ update_follow_component :: proc(c : ^Follow_Component) {
 	transform.pos += rl.Vector2Normalize(target.pos - transform.pos) * c.speed * g_dt
 }
 
-generate_map :: proc(m : ^Map) {
-
-}
 
 default_settings :: #force_inline proc() {
 	g_settings.rot_speed = 100.0
@@ -204,15 +187,15 @@ default_settings :: #force_inline proc() {
 }
 
 init :: #force_inline proc() {
-	g_main_camera.offset = {0.0, 0.0}
-	g_main_camera.target = {0.0, 0.0}
-	g_main_camera.rotation = 0.0
-	g_main_camera.zoom = 100.0
+	g_camera.offset = {0.0, 0.0}
+	g_camera.target = {0.0, 0.0}
+	g_camera.rotation = 0.0
+	g_camera.zoom = 100.0
 
 	player := create_player()
-	slime1 := create_slime({11.0, 11.0})
-	slime2 := create_slime({12.0, 12.0})
-	slime3 := create_slime({13.0, 13.0})
+	slime1 := create_slime({1.0, 1.0})
+	slime2 := create_slime({2.0, 2.0})
+	slime3 := create_slime({3.0, 3.0})
 
 	add_follow_component(slime2, {
 		transform = get_transform_handle(slime2),
@@ -225,10 +208,12 @@ init :: #force_inline proc() {
 		target = get_transform_handle(player),
 		speed = 3.0
 	})
+
+	g_map = generate_map(rand.uint64(), 1000, 1000)
 }
 
 shutdown :: #force_inline proc() {
-	delete(g_map.tiles)
+	delete_map(&g_map)
 }
 
 update :: #force_inline proc() {
@@ -240,6 +225,12 @@ update :: #force_inline proc() {
 	default_rect_collider_system()
 
 	default_camera_system()
+	t := get_transform_component(g_player)
+	draw_map(g_map, rl.Rectangle {
+		x = t.pos.x - 20.0,
+		y = t.pos.y - 20.0,
+		width = 40.0, height = 40.0
+	})
 	default_sprite_system()
 }
 

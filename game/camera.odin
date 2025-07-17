@@ -2,9 +2,9 @@ package game
 
 update_camera_component :: #force_inline proc(c : ^Camera_Component) {
 	if c.main_camera {
-		g_main_camera.target = get_transform_component(c.transform).pos
-		g_main_camera.rotation = -get_transform_component(c.transform).rot // CW rotation
-		g_main_camera.offset = {
+		g_camera.target = get_transform_component(c.transform).pos
+		g_camera.rotation = -get_transform_component(c.transform).rot // CW rotation
+		g_camera.offset = {
 			f32(g_settings.window_width) * 0.5,
 			f32(g_settings.window_height) * 0.5
 		}
