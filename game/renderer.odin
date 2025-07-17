@@ -18,17 +18,17 @@ RectDrawInfo :: struct {
 
 Renderer :: struct {
 	world_sprites : [dynamic]SpriteDrawInfo,
-	debug_rects : [dynamic]RectDrawInfo
+	debug_outlines : [dynamic]RectDrawInfo
 }
 
 make_renderer :: proc() {
 	g_renderer.world_sprites = make([dynamic]SpriteDrawInfo)
-	g_renderer.debug_rects = make([dynamic]RectDrawInfo)
+	g_renderer.debug_outlines = make([dynamic]RectDrawInfo)
 }
 
 delete_renderer :: proc() {
 	delete(g_renderer.world_sprites)
-	delete(g_renderer.debug_rects)
+	delete(g_renderer.debug_outlines)
 }
 
 draw_world_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
@@ -37,9 +37,9 @@ draw_world_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : 
 	})
 }
 
-draw_debug_rect_tl :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.debug_rects, RectDrawInfo {
-		pos, size, colour, rot
+draw_debug_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color) {
+	append(&g_renderer.debug_outlines, RectDrawInfo {
+		pos - 0.5 * size, size, colour, 0.0
 	})
 }
 
@@ -67,9 +67,13 @@ render :: proc() {
 	}
 
 	when DEBUG {
-	for s in g_renderer.debug_rects {
-		rl.DrawRectangleV(
-			s.pos, s.size, s.colour
+	for s in g_renderer.debug_outlines {
+		rl.DrawRectangleLinesEx( rl.Rectangle ({
+				x = s.pos.x, y = s.pos.y,
+				width = s.size.x, height = s.size.y
+			}),
+			0.05,
+			s.colour
 		)
 	}
 	}
@@ -78,4 +82,5 @@ render :: proc() {
 	rl.EndDrawing()
 
 	clear(&g_renderer.world_sprites)
+	clear(&g_renderer.debug_outlines)
 }

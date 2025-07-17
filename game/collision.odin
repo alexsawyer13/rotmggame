@@ -46,11 +46,9 @@ get_first_collides_with_tag :: proc(collider : Rect_Collider_Component, tag : Co
 }
 
 update_rect_collider_component :: #force_inline proc(c : ^Rect_Collider_Component) {
-
-}
-
-rect_collider_system :: proc(colliders : []Rect_Collider_Component) {
 	when DEBUG && DEBUG_DRAW_COLLIDERS {
-
+		t := get_transform_component(c.transform)
+		if t == nil do return
+		draw_debug_outline_centre(t.pos, t.size, rl.RED)
 	}
 }

@@ -238,6 +238,8 @@ update :: #force_inline proc() {
 	default_projectile_system()
 	default_follow_system()
 
+	default_rect_collider_system()
+
 	default_camera_system()
 	default_sprite_system()
 }
