@@ -51,7 +51,6 @@ g_map : Map
 
 g_dt : f32
 
-DEBUG :: true
 DEBUG_DRAW_COLLIDERS :: true
 
 create_player :: proc() -> Entity_Handle {
