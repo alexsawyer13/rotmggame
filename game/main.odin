@@ -12,8 +12,8 @@ import rl "vendor:raylib"
 // good. Make sure it deletes old component
 
 Settings :: struct {
-	window_width  : i32,
-	window_height : i32,
+	default_window_width  : i32,
+	default_window_height : i32,
 
 	rot_speed : f32,
 
@@ -29,6 +29,13 @@ Settings :: struct {
 g_renderer : Renderer
 g_sprites : [SpriteType]Sprite
 g_settings : Settings
+
+g_window_width : i32
+g_window_height : i32
+g_window_half_width : i32
+g_window_half_height : i32
+g_window_size : rl.Vector2
+g_window_half_size : rl.Vector2
 
 g_camera : rl.Camera2D
 g_ecs : Ecs
@@ -148,18 +155,10 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 		t.rot = 0.0
 	}
 
-	// TODO(Alex): Maybe change this to use a
-	// mouse to world position function
-	// Could be useful to have in future
 	if rl.IsMouseButtonPressed(.LEFT) {
-		mpos := rl.GetMousePosition()
-		screen_centre := rl.Vector2 {f32(g_settings.window_width) * 0.5, f32(g_settings.window_height) * 0.5}
-		proj_dir_screen := rl.Vector2Normalize(mpos - screen_centre)
-		proj_dir_world := rl.Vector2 {
-			cos * proj_dir_screen.x - sin * proj_dir_screen.y,
-			sin * proj_dir_screen.x + cos * proj_dir_screen.y
-		}
-		create_projectile(t.pos, proj_dir_world, 10.0, 5.0)
+		mpos := screen_to_world_space(rl.GetMousePosition())
+		dir := rl.Vector2Normalize(mpos - t.pos)
+		create_projectile(t.pos, dir, 10.0, 5.0)
 	}
 }
 
@@ -175,8 +174,8 @@ update_follow_component :: proc(c : ^Follow_Component) {
 
 default_settings :: #force_inline proc() {
 	g_settings.rot_speed = 100.0
-	g_settings.window_width = 1600
-	g_settings.window_height = 900
+	g_settings.default_window_width = 1280
+	g_settings.default_window_height = 720
 	g_settings.up_key = .W
 	g_settings.down_key = .S
 	g_settings.right_key = .D
@@ -237,7 +236,16 @@ update :: #force_inline proc() {
 main :: proc() {
 	default_settings()
 
-	rl.InitWindow(1600, 900, "rotmggame")
+	g_window_width = g_settings.default_window_width
+	g_window_height = g_settings.default_window_height
+
+	g_window_size = {f32(g_window_width), f32(g_window_height)}
+	g_window_half_size = g_window_size * 0.5			
+
+	g_window_half_width = i32(g_window_half_size.x)
+	g_window_half_height = i32(g_window_half_size.y)
+
+	rl.InitWindow(g_window_width, g_window_height, "rotmggame")
 	defer rl.CloseWindow()
 
 	make_renderer()
@@ -255,6 +263,17 @@ main :: proc() {
 
 	for !rl.WindowShouldClose() {
 		g_dt = rl.GetFrameTime()
+		
+		if rl.IsWindowResized() {
+			g_window_width = rl.GetScreenWidth()
+			g_window_height = rl.GetScreenHeight()
+
+			g_window_size = {f32(g_window_width), f32(g_window_height)}
+			g_window_half_size = g_window_size * 0.5			
+
+			g_window_half_width = i32(g_window_half_size.x)
+			g_window_half_height = i32(g_window_half_size.y)
+		}
 
 		if pause do g_dt = 0
 		if rl.IsKeyPressed(.P) do pause = !pause
