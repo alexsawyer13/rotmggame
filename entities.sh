@@ -2,7 +2,9 @@ ENTITIES_PATH="game/entity.odin"
 COMPONENTS_PATH="game/components.odin"
 
 # Get names of components from main.odin
-COMPONENTS=$(cat "$COMPONENTS_PATH" | grep -E -o "[a-zA-Z]*_Component :: struct" | sed -E "s/([a-zA-Z]*)_Component :: struct/\1/")
+COMPONENTS=$(cat "$COMPONENTS_PATH" | grep -E -o "[a-zA-Z_]*_Component :: struct" | sed -E "s/([a-zA-Z]*)_Component :: struct/\1/")
+
+echo $COMPONENTS
 
 for component in $COMPONENTS; do
 	name=$(echo $component | sed -E "s/(.*)/\L\1\E/")
@@ -89,11 +91,12 @@ for component in $COMPONENTS; do
 	write "" 
 	write "${component}_Handle :: distinct Handle" 
 	write "" 
-	write "add_${name}_component :: proc(e : Entity_Handle, c : ${component}_Component = {}) -> ^${component}_Component {" 
+	write "add_${name}_component :: proc(e : Entity_Handle, c : ${component}_Component = {}) -> ${component}_Handle {" 
 	write "	ent := get_entity(e)" 
-	write "	if ent == nil do return nil" 
+	write "	if ent == nil do return {-1, -1}" 
 	write "	ent.${name} = ${component}_Handle(insert_packed_array(&g_ecs.${name}_components, c))" 
-	write "	return get_packed_array(g_ecs.${name}_components, Handle(ent.${name}))" 
+	write " return ent.${name}"
+	#write "	return get_packed_array(g_ecs.${name}_components, Handle(ent.${name}))" 
 	write "}" 
 	write "" 
 	write "remove_${name}_component :: proc(e : Entity_Handle) {" 
@@ -131,7 +134,7 @@ for component in $COMPONENTS; do
 	write "	get_${name}_component_comp," 
 	write "}" 
 	write ""
-	write "${name}_system :: proc() {"
+	write "default_${name}_system :: proc() {"
 	write "	for &c in g_ecs.${name}_components.items {"
 	write "		if c.removed do continue"
 	write "		update_${name}_component(&c.item)"
