@@ -40,8 +40,7 @@ Projectile_Component :: struct {
 Rect_Collider_Component :: struct {
 	entity    : Entity_Handle,
 	transform : Transform_Handle,
-
-	tags     : bit_set[Collider_Tag],
+	tags      : bit_set[Collider_Tag],
 }
 
 Follow_Component :: struct {

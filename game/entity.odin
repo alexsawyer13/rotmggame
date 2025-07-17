@@ -6,88 +6,88 @@ package game
 Entity_Handle :: distinct Handle
 
 Entity :: struct {
-transform : Transform_Handle,
-sprite : Sprite_Handle,
-control : Control_Handle,
-camera : Camera_Handle,
-projectile : Projectile_Handle,
-rect_collider : Rect_Collider_Handle,
-follow : Follow_Handle,
+	transform : Transform_Handle,
+	sprite : Sprite_Handle,
+	control : Control_Handle,
+	camera : Camera_Handle,
+	projectile : Projectile_Handle,
+	rect_collider : Rect_Collider_Handle,
+	follow : Follow_Handle,
 }
 
 Ecs :: struct {
-entities : PackedArray(Entity),
-transform_components : PackedArray(Transform_Component),
-sprite_components : PackedArray(Sprite_Component),
-control_components : PackedArray(Control_Component),
-camera_components : PackedArray(Camera_Component),
-projectile_components : PackedArray(Projectile_Component),
-rect_collider_components : PackedArray(Rect_Collider_Component),
-follow_components : PackedArray(Follow_Component),
+	entities : PackedArray(Entity),
+	transform_components : PackedArray(Transform_Component),
+	sprite_components : PackedArray(Sprite_Component),
+	control_components : PackedArray(Control_Component),
+	camera_components : PackedArray(Camera_Component),
+	projectile_components : PackedArray(Projectile_Component),
+	rect_collider_components : PackedArray(Rect_Collider_Component),
+	follow_components : PackedArray(Follow_Component),
 }
 
 make_ecs :: proc(){
-g_ecs.entities = make_packed_array(Entity)
-g_ecs.transform_components = make_packed_array(Transform_Component)
-g_ecs.sprite_components = make_packed_array(Sprite_Component)
-g_ecs.control_components = make_packed_array(Control_Component)
-g_ecs.camera_components = make_packed_array(Camera_Component)
-g_ecs.projectile_components = make_packed_array(Projectile_Component)
-g_ecs.rect_collider_components = make_packed_array(Rect_Collider_Component)
-g_ecs.follow_components = make_packed_array(Follow_Component)
+	g_ecs.entities = make_packed_array(Entity)
+	g_ecs.transform_components = make_packed_array(Transform_Component)
+	g_ecs.sprite_components = make_packed_array(Sprite_Component)
+	g_ecs.control_components = make_packed_array(Control_Component)
+	g_ecs.camera_components = make_packed_array(Camera_Component)
+	g_ecs.projectile_components = make_packed_array(Projectile_Component)
+	g_ecs.rect_collider_components = make_packed_array(Rect_Collider_Component)
+	g_ecs.follow_components = make_packed_array(Follow_Component)
 }
 
-destroy_ecs :: proc() {
-delete_packed_array(&g_ecs.entities)
-delete_packed_array(&g_ecs.transform_components)
-delete_packed_array(&g_ecs.sprite_components)
-delete_packed_array(&g_ecs.control_components)
-delete_packed_array(&g_ecs.camera_components)
-delete_packed_array(&g_ecs.projectile_components)
-delete_packed_array(&g_ecs.rect_collider_components)
-delete_packed_array(&g_ecs.follow_components)
+delete_ecs :: proc() {
+	delete_packed_array(&g_ecs.entities)
+	delete_packed_array(&g_ecs.transform_components)
+	delete_packed_array(&g_ecs.sprite_components)
+	delete_packed_array(&g_ecs.control_components)
+	delete_packed_array(&g_ecs.camera_components)
+	delete_packed_array(&g_ecs.projectile_components)
+	delete_packed_array(&g_ecs.rect_collider_components)
+	delete_packed_array(&g_ecs.follow_components)
 }
 
 // ----- Entities -----
 
 make_entity :: proc() -> Entity_Handle {
-return Entity_Handle(insert_packed_array(&g_ecs.entities, Entity {
-Transform_Handle {-1, -1},
-Sprite_Handle {-1, -1},
-Control_Handle {-1, -1},
-Camera_Handle {-1, -1},
-Projectile_Handle {-1, -1},
-Rect_Collider_Handle {-1, -1},
-Follow_Handle {-1, -1},
-}))
+	return Entity_Handle(insert_packed_array(&g_ecs.entities, Entity {
+		Transform_Handle {-1, -1},
+		Sprite_Handle {-1, -1},
+		Control_Handle {-1, -1},
+		Camera_Handle {-1, -1},
+		Projectile_Handle {-1, -1},
+		Rect_Collider_Handle {-1, -1},
+		Follow_Handle {-1, -1},
+	}))
 }
 
 remove_entity :: proc(e : Entity_Handle) {
-try_remove_transform_component(e)
-try_remove_sprite_component(e)
-try_remove_control_component(e)
-try_remove_camera_component(e)
-try_remove_projectile_component(e)
-try_remove_rect_collider_component(e)
-try_remove_follow_component(e)
-if !remove_packed_array(&g_ecs.entities, Handle(e)) {
-panic("Trying to remove entity that doesn't exist")
-}
+	try_remove_transform_component(e)
+	try_remove_sprite_component(e)
+	try_remove_control_component(e)
+	try_remove_camera_component(e)
+	try_remove_projectile_component(e)
+	try_remove_rect_collider_component(e)
+	try_remove_follow_component(e)
+	if !remove_packed_array(&g_ecs.entities, Handle(e)) {
+		panic("Trying to remove entity that doesn't exist")
+	}
 }
 
 try_remove_entity :: proc(e : Entity_Handle) {
-try_remove_transform_component(e)
-try_remove_sprite_component(e)
-try_remove_control_component(e)
-try_remove_camera_component(e)
-try_remove_projectile_component(e)
-try_remove_rect_collider_component(e)
-try_remove_follow_component(e)
-remove_packed_array(&g_ecs.entities, Handle(e))
+	try_remove_transform_component(e)
+	try_remove_sprite_component(e)
+	try_remove_control_component(e)
+	try_remove_camera_component(e)
+	try_remove_projectile_component(e)
+	try_remove_rect_collider_component(e)
+	try_remove_follow_component(e)
+	remove_packed_array(&g_ecs.entities, Handle(e))
 }
 
 get_entity :: #force_inline proc(e : Entity_Handle) -> ^Entity {
-return get_packed_array(g_ecs.entities, Handle(e))
+	return get_packed_array(g_ecs.entities, Handle(e))
 }
 
 // ----- Transform component -----
@@ -95,362 +95,362 @@ return get_packed_array(g_ecs.entities, Handle(e))
 Transform_Handle :: distinct Handle
 
 add_transform_component :: proc(e : Entity_Handle, c : Transform_Component = {}) -> Transform_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.transform = Transform_Handle(insert_packed_array(&g_ecs.transform_components, c))
-return ent.transform
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.transform = Transform_Handle(insert_packed_array(&g_ecs.transform_components, c))
+	return ent.transform
 }
 
 remove_transform_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.transform_components, Handle(ent.transform)) {
-panic("Removing non existent transform component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.transform_components, Handle(ent.transform)) {
+		panic("Removing non existent transform component")
+	}
 }
 
 try_remove_transform_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.transform_components, Handle(ent.transform))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.transform_components, Handle(ent.transform))
 }
 
 get_transform_handle :: #force_inline proc(e : Entity_Handle) -> Transform_Handle {
-ent := get_entity(e)
-if ent == nil do return Transform_Handle {-1, -1}
-return ent.transform
+	ent := get_entity(e)
+	if ent == nil do return Transform_Handle {-1, -1}
+	return ent.transform
 }
 
 get_transform_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Transform_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.transform_components, Handle(ent.transform))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.transform_components, Handle(ent.transform))
 }
 
 get_transform_component_comp :: #force_inline proc(h : Transform_Handle) -> ^Transform_Component {
-return get_packed_array(g_ecs.transform_components, Handle(h))
+	return get_packed_array(g_ecs.transform_components, Handle(h))
 }
 
 get_transform_component :: proc {
-get_transform_component_ent,
-get_transform_component_comp,
+	get_transform_component_ent,
+	get_transform_component_comp,
 }
 
 default_transform_system :: proc() {
-for &c in g_ecs.transform_components.items {
-if c.removed do continue
-update_transform_component(&c.item)
-}
+	for &c in g_ecs.transform_components.items {
+		if c.removed do continue
+		update_transform_component(&c.item)
+	}
 }
 // ----- Sprite component -----
 
 Sprite_Handle :: distinct Handle
 
 add_sprite_component :: proc(e : Entity_Handle, c : Sprite_Component = {}) -> Sprite_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.sprite = Sprite_Handle(insert_packed_array(&g_ecs.sprite_components, c))
-return ent.sprite
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.sprite = Sprite_Handle(insert_packed_array(&g_ecs.sprite_components, c))
+	return ent.sprite
 }
 
 remove_sprite_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.sprite_components, Handle(ent.sprite)) {
-panic("Removing non existent sprite component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.sprite_components, Handle(ent.sprite)) {
+		panic("Removing non existent sprite component")
+	}
 }
 
 try_remove_sprite_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.sprite_components, Handle(ent.sprite))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.sprite_components, Handle(ent.sprite))
 }
 
 get_sprite_handle :: #force_inline proc(e : Entity_Handle) -> Sprite_Handle {
-ent := get_entity(e)
-if ent == nil do return Sprite_Handle {-1, -1}
-return ent.sprite
+	ent := get_entity(e)
+	if ent == nil do return Sprite_Handle {-1, -1}
+	return ent.sprite
 }
 
 get_sprite_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Sprite_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.sprite_components, Handle(ent.sprite))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.sprite_components, Handle(ent.sprite))
 }
 
 get_sprite_component_comp :: #force_inline proc(h : Sprite_Handle) -> ^Sprite_Component {
-return get_packed_array(g_ecs.sprite_components, Handle(h))
+	return get_packed_array(g_ecs.sprite_components, Handle(h))
 }
 
 get_sprite_component :: proc {
-get_sprite_component_ent,
-get_sprite_component_comp,
+	get_sprite_component_ent,
+	get_sprite_component_comp,
 }
 
 default_sprite_system :: proc() {
-for &c in g_ecs.sprite_components.items {
-if c.removed do continue
-update_sprite_component(&c.item)
-}
+	for &c in g_ecs.sprite_components.items {
+		if c.removed do continue
+		update_sprite_component(&c.item)
+	}
 }
 // ----- Control component -----
 
 Control_Handle :: distinct Handle
 
 add_control_component :: proc(e : Entity_Handle, c : Control_Component = {}) -> Control_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.control = Control_Handle(insert_packed_array(&g_ecs.control_components, c))
-return ent.control
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.control = Control_Handle(insert_packed_array(&g_ecs.control_components, c))
+	return ent.control
 }
 
 remove_control_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.control_components, Handle(ent.control)) {
-panic("Removing non existent control component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.control_components, Handle(ent.control)) {
+		panic("Removing non existent control component")
+	}
 }
 
 try_remove_control_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.control_components, Handle(ent.control))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.control_components, Handle(ent.control))
 }
 
 get_control_handle :: #force_inline proc(e : Entity_Handle) -> Control_Handle {
-ent := get_entity(e)
-if ent == nil do return Control_Handle {-1, -1}
-return ent.control
+	ent := get_entity(e)
+	if ent == nil do return Control_Handle {-1, -1}
+	return ent.control
 }
 
 get_control_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Control_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.control_components, Handle(ent.control))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.control_components, Handle(ent.control))
 }
 
 get_control_component_comp :: #force_inline proc(h : Control_Handle) -> ^Control_Component {
-return get_packed_array(g_ecs.control_components, Handle(h))
+	return get_packed_array(g_ecs.control_components, Handle(h))
 }
 
 get_control_component :: proc {
-get_control_component_ent,
-get_control_component_comp,
+	get_control_component_ent,
+	get_control_component_comp,
 }
 
 default_control_system :: proc() {
-for &c in g_ecs.control_components.items {
-if c.removed do continue
-update_control_component(&c.item)
-}
+	for &c in g_ecs.control_components.items {
+		if c.removed do continue
+		update_control_component(&c.item)
+	}
 }
 // ----- Camera component -----
 
 Camera_Handle :: distinct Handle
 
 add_camera_component :: proc(e : Entity_Handle, c : Camera_Component = {}) -> Camera_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.camera = Camera_Handle(insert_packed_array(&g_ecs.camera_components, c))
-return ent.camera
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.camera = Camera_Handle(insert_packed_array(&g_ecs.camera_components, c))
+	return ent.camera
 }
 
 remove_camera_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.camera_components, Handle(ent.camera)) {
-panic("Removing non existent camera component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.camera_components, Handle(ent.camera)) {
+		panic("Removing non existent camera component")
+	}
 }
 
 try_remove_camera_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.camera_components, Handle(ent.camera))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.camera_components, Handle(ent.camera))
 }
 
 get_camera_handle :: #force_inline proc(e : Entity_Handle) -> Camera_Handle {
-ent := get_entity(e)
-if ent == nil do return Camera_Handle {-1, -1}
-return ent.camera
+	ent := get_entity(e)
+	if ent == nil do return Camera_Handle {-1, -1}
+	return ent.camera
 }
 
 get_camera_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Camera_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.camera_components, Handle(ent.camera))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.camera_components, Handle(ent.camera))
 }
 
 get_camera_component_comp :: #force_inline proc(h : Camera_Handle) -> ^Camera_Component {
-return get_packed_array(g_ecs.camera_components, Handle(h))
+	return get_packed_array(g_ecs.camera_components, Handle(h))
 }
 
 get_camera_component :: proc {
-get_camera_component_ent,
-get_camera_component_comp,
+	get_camera_component_ent,
+	get_camera_component_comp,
 }
 
 default_camera_system :: proc() {
-for &c in g_ecs.camera_components.items {
-if c.removed do continue
-update_camera_component(&c.item)
-}
+	for &c in g_ecs.camera_components.items {
+		if c.removed do continue
+		update_camera_component(&c.item)
+	}
 }
 // ----- Projectile component -----
 
 Projectile_Handle :: distinct Handle
 
 add_projectile_component :: proc(e : Entity_Handle, c : Projectile_Component = {}) -> Projectile_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.projectile = Projectile_Handle(insert_packed_array(&g_ecs.projectile_components, c))
-return ent.projectile
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.projectile = Projectile_Handle(insert_packed_array(&g_ecs.projectile_components, c))
+	return ent.projectile
 }
 
 remove_projectile_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.projectile_components, Handle(ent.projectile)) {
-panic("Removing non existent projectile component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.projectile_components, Handle(ent.projectile)) {
+		panic("Removing non existent projectile component")
+	}
 }
 
 try_remove_projectile_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.projectile_components, Handle(ent.projectile))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.projectile_components, Handle(ent.projectile))
 }
 
 get_projectile_handle :: #force_inline proc(e : Entity_Handle) -> Projectile_Handle {
-ent := get_entity(e)
-if ent == nil do return Projectile_Handle {-1, -1}
-return ent.projectile
+	ent := get_entity(e)
+	if ent == nil do return Projectile_Handle {-1, -1}
+	return ent.projectile
 }
 
 get_projectile_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Projectile_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.projectile_components, Handle(ent.projectile))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.projectile_components, Handle(ent.projectile))
 }
 
 get_projectile_component_comp :: #force_inline proc(h : Projectile_Handle) -> ^Projectile_Component {
-return get_packed_array(g_ecs.projectile_components, Handle(h))
+	return get_packed_array(g_ecs.projectile_components, Handle(h))
 }
 
 get_projectile_component :: proc {
-get_projectile_component_ent,
-get_projectile_component_comp,
+	get_projectile_component_ent,
+	get_projectile_component_comp,
 }
 
 default_projectile_system :: proc() {
-for &c in g_ecs.projectile_components.items {
-if c.removed do continue
-update_projectile_component(&c.item)
-}
+	for &c in g_ecs.projectile_components.items {
+		if c.removed do continue
+		update_projectile_component(&c.item)
+	}
 }
 // ----- Rect_Collider component -----
 
 Rect_Collider_Handle :: distinct Handle
 
 add_rect_collider_component :: proc(e : Entity_Handle, c : Rect_Collider_Component = {}) -> Rect_Collider_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.rect_collider = Rect_Collider_Handle(insert_packed_array(&g_ecs.rect_collider_components, c))
-return ent.rect_collider
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.rect_collider = Rect_Collider_Handle(insert_packed_array(&g_ecs.rect_collider_components, c))
+	return ent.rect_collider
 }
 
 remove_rect_collider_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.rect_collider_components, Handle(ent.rect_collider)) {
-panic("Removing non existent rect_collider component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.rect_collider_components, Handle(ent.rect_collider)) {
+		panic("Removing non existent rect_collider component")
+	}
 }
 
 try_remove_rect_collider_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.rect_collider_components, Handle(ent.rect_collider))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.rect_collider_components, Handle(ent.rect_collider))
 }
 
 get_rect_collider_handle :: #force_inline proc(e : Entity_Handle) -> Rect_Collider_Handle {
-ent := get_entity(e)
-if ent == nil do return Rect_Collider_Handle {-1, -1}
-return ent.rect_collider
+	ent := get_entity(e)
+	if ent == nil do return Rect_Collider_Handle {-1, -1}
+	return ent.rect_collider
 }
 
 get_rect_collider_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Rect_Collider_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.rect_collider_components, Handle(ent.rect_collider))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.rect_collider_components, Handle(ent.rect_collider))
 }
 
 get_rect_collider_component_comp :: #force_inline proc(h : Rect_Collider_Handle) -> ^Rect_Collider_Component {
-return get_packed_array(g_ecs.rect_collider_components, Handle(h))
+	return get_packed_array(g_ecs.rect_collider_components, Handle(h))
 }
 
 get_rect_collider_component :: proc {
-get_rect_collider_component_ent,
-get_rect_collider_component_comp,
+	get_rect_collider_component_ent,
+	get_rect_collider_component_comp,
 }
 
 default_rect_collider_system :: proc() {
-for &c in g_ecs.rect_collider_components.items {
-if c.removed do continue
-update_rect_collider_component(&c.item)
-}
+	for &c in g_ecs.rect_collider_components.items {
+		if c.removed do continue
+		update_rect_collider_component(&c.item)
+	}
 }
 // ----- Follow component -----
 
 Follow_Handle :: distinct Handle
 
 add_follow_component :: proc(e : Entity_Handle, c : Follow_Component = {}) -> Follow_Handle {
-ent := get_entity(e)
-if ent == nil do return {-1, -1}
-ent.follow = Follow_Handle(insert_packed_array(&g_ecs.follow_components, c))
-return ent.follow
+	ent := get_entity(e)
+	if ent == nil do return {-1, -1}
+		ent.follow = Follow_Handle(insert_packed_array(&g_ecs.follow_components, c))
+	return ent.follow
 }
 
 remove_follow_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do panic("Removing component from non existent entity")
-if !remove_packed_array(&g_ecs.follow_components, Handle(ent.follow)) {
-panic("Removing non existent follow component")
-}
+	ent := get_entity(e)
+	if ent == nil do panic("Removing component from non existent entity")
+	if !remove_packed_array(&g_ecs.follow_components, Handle(ent.follow)) {
+		panic("Removing non existent follow component")
+	}
 }
 
 try_remove_follow_component :: proc(e : Entity_Handle) {
-ent := get_entity(e)
-if ent == nil do return
-remove_packed_array(&g_ecs.follow_components, Handle(ent.follow))
+	ent := get_entity(e)
+	if ent == nil do return
+	remove_packed_array(&g_ecs.follow_components, Handle(ent.follow))
 }
 
 get_follow_handle :: #force_inline proc(e : Entity_Handle) -> Follow_Handle {
-ent := get_entity(e)
-if ent == nil do return Follow_Handle {-1, -1}
-return ent.follow
+	ent := get_entity(e)
+	if ent == nil do return Follow_Handle {-1, -1}
+	return ent.follow
 }
 
 get_follow_component_ent :: #force_inline proc(e : Entity_Handle) -> ^Follow_Component {
-ent := get_entity(e)
-if ent == nil do return nil
-return get_packed_array(g_ecs.follow_components, Handle(ent.follow))
+	ent := get_entity(e)
+	if ent == nil do return nil
+	return get_packed_array(g_ecs.follow_components, Handle(ent.follow))
 }
 
 get_follow_component_comp :: #force_inline proc(h : Follow_Handle) -> ^Follow_Component {
-return get_packed_array(g_ecs.follow_components, Handle(h))
+	return get_packed_array(g_ecs.follow_components, Handle(h))
 }
 
 get_follow_component :: proc {
-get_follow_component_ent,
-get_follow_component_comp,
+	get_follow_component_ent,
+	get_follow_component_comp,
 }
 
 default_follow_system :: proc() {
-for &c in g_ecs.follow_components.items {
-if c.removed do continue
-update_follow_component(&c.item)
-}
+	for &c in g_ecs.follow_components.items {
+		if c.removed do continue
+		update_follow_component(&c.item)
+	}
 }

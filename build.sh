@@ -1,3 +1,3 @@
-. ./sprites.sh
-. ./entities.sh
+./scripts/sprite.sh > game/sprite.odin
+./scripts/entity.sh > game/entity.odin
 odin run game

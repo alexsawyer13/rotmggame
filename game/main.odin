@@ -10,12 +10,6 @@ import rl "vendor:raylib"
 // add a new one and overlay the old. This isn't
 // good. Make sure it deletes old component
 
-Collider_Tag :: enum {
-	Collider_Player,
-	Collider_Enemy,
-	Collider_Projectile,
-}
-
 TileType :: enum {
 	None,
 	Dirt,
@@ -30,12 +24,6 @@ Map :: struct {
 	width : i32,
 	height : i32,
 	tiles : []Tile,
-}
-
-Sprite :: struct {
-	width : i32,
-	height : i32,
-	texture : rl.Texture2D,
 }
 
 Settings :: struct {
@@ -53,13 +41,18 @@ Settings :: struct {
 	reset_rot_key : rl.KeyboardKey
 }
 
-g_ecs : Ecs
+g_renderer : Renderer
 g_sprites : [SpriteType]Sprite
 g_settings : Settings
 
 g_main_camera : rl.Camera2D
+g_ecs : Ecs
+g_map : Map
 
 g_dt : f32
+
+DEBUG :: true
+DEBUG_DRAW_COLLIDERS :: true
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -108,62 +101,8 @@ create_slime :: proc(pos : rl.Vector2) -> Entity_Handle {
 	return e
 }
 
-create_projectile :: proc(pos, dir : rl.Vector2, speed, lifetime_s : f32) -> Entity_Handle {
-	e := make_entity()
-	t := add_transform_component(e, {
-		pos = pos,
-		size = {0.1, 0.1},
-		rot = 0.0
-	})
-	add_sprite_component(e, {
-		transform = t,
-		sprite = .Sprite_Dirt
-	})
-	c := add_rect_collider_component(e, {
-		entity = e,
-		transform = t,
-		tags = {.Collider_Projectile}
-	})
-	add_projectile_component(e, {
-		entity = e,
-		transform = t,
-		collider = c,
-
-		dir = dir,
-		speed = speed,
-
-		birth = time.now(),
-		lifetime_s = lifetime_s,
-	})
-	return e
-}
-
-draw_sprite_centre :: proc(pos : rl.Vector2, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
-	rl.DrawTexturePro(
-		g_sprites[sprite].texture,
-		rl.Rectangle { // Src
-			x = 0, y = 0,
-			width = f32(g_sprites[sprite].width),
-			height = f32(g_sprites[sprite].height),
-		},
-		rl.Rectangle { // Dst
-			x = pos.x, y = pos.y,
-			width = size.x, height = size.y
-		},
-		size * 0.5, // Origin
-		rot, // Rotation CW
-		{255, 255, 255, 255} // Tint
-	)
-}
-
 update_transform_component :: #force_inline proc(t : ^Transform_Component) {
 
-}
-
-update_sprite_component :: #force_inline proc(s : ^Sprite_Component) {
-	t : ^Transform_Component = get_transform_component(s.transform)
-	if t == nil do return
-	draw_sprite_centre(t.pos, t.size, s.sprite, t.rot)
 }
 
 update_control_component :: #force_inline proc(c : ^Control_Component) {
@@ -239,102 +178,6 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 	}
 }
 
-update_camera_component :: #force_inline proc(c : ^Camera_Component) {
-	if c.main_camera {
-		g_main_camera.target = get_transform_component(c.transform).pos
-		g_main_camera.rotation = -get_transform_component(c.transform).rot // CW rotation
-		g_main_camera.offset = {
-			f32(g_settings.window_width) * 0.5,
-			f32(g_settings.window_height) * 0.5
-		}
-	}
-}
-
-set_main_camera :: proc(h : Camera_Handle) {
-	cam := get_camera_component(h)
-	if cam == nil {
-		panic("Setting main camera to a non existent camera!")
-	}
-
-	for &c in g_ecs.camera_components.items {
-		if !c.removed do c.item.main_camera = false
-	}
-
-	cam.main_camera = true
-}
-
-update_projectile_component :: #force_inline proc(p : ^Projectile_Component) {
-	t := get_transform_component(p.transform)
-	if t == nil do return
-
-	t.pos += (p.dir * p.speed * g_dt)
-	age_s := time.duration_seconds(time.diff(p.birth, time.now()))
-
-	if age_s > f64(p.lifetime_s) {
-		remove_entity(p.entity)
-		return
-	}
-
-	c := get_rect_collider_component(p.collider)
-	if c == nil do return
-	if collides, enemy := get_first_collides_with_tag(c^, .Collider_Enemy); collides {
-		remove_entity(p.entity)
-		remove_entity(get_rect_collider_component(enemy).entity)
-		return
-	}
-}
-
-update_rect_collider_component :: #force_inline proc(c : ^Rect_Collider_Component) {
-
-}
-
-//rect_collider_system :: proc(colliders : []Rect_Collider_Component) {
-//	// Loop through every pair of colliders
-//	// without repeating
-//	for i in 0..<len(colliders) {
-//		for j in i..<len(colliders) {
-//
-//		}
-//	}
-//}
-
-rect_rect_collision :: proc(r1, r2 : rl.Rectangle) -> bool {
-	return ((r2.x > r1.x && r2.x < r1.x + r1.width) &&
-	       (r2.y > r1.y && r2.y < r1.y + r1.height)) ||
-	       ((r2.x + r2.width > r1.x && r2.x < r1.x + r1.width) &&
-	       (r2.y + r2.height > r1.y && r2.y < r1.y + r1.height))
-}
-
-get_first_collides_with_tag :: proc(collider : Rect_Collider_Component, tag : Collider_Tag) -> (bool, Rect_Collider_Handle) {
-	t := get_transform_component(collider.transform)
-	if t == nil do return false, {-1, -1}
-
-	r1 := rl.Rectangle {
-		x = t.pos.x - 0.5 * t.size.x,
-		y = t.pos.y - 0.5 * t.size.y,
-		width = t.size.x,
-		height = t.size.y
-	}
-
-	for c, i in g_ecs.rect_collider_components.items {
-		if c.removed do continue
-		if !(tag in c.item.tags) do continue
-		t2 := get_transform_component(c.item.transform)
-		if t2 == nil do continue
-
-		r2 := rl.Rectangle {
-			x = t2.pos.x - 0.5 * t2.size.x,
-			y = t2.pos.y - 0.5 * t2.size.y,
-			width = t2.size.x,
-			height = t2.size.y
-		}
-
-		if rect_rect_collision(r1, r2) do return true, {c.id, i64(i)}
-	}
-
-	return false, {-1, -1}
-}
-
 update_follow_component :: proc(c : ^Follow_Component) {
 	transform := get_transform_component(c.transform)
 	if transform == nil do return
@@ -344,7 +187,11 @@ update_follow_component :: proc(c : ^Follow_Component) {
 	transform.pos += rl.Vector2Normalize(target.pos - transform.pos) * c.speed * g_dt
 }
 
-init :: #force_inline proc() {
+generate_map :: proc(m : ^Map) {
+
+}
+
+default_settings :: #force_inline proc() {
 	g_settings.rot_speed = 100.0
 	g_settings.window_width = 1600
 	g_settings.window_height = 900
@@ -355,7 +202,9 @@ init :: #force_inline proc() {
 	g_settings.cw_key = .E
 	g_settings.ccw_key = .Q
 	g_settings.reset_rot_key = .Z
-	
+}
+
+init :: #force_inline proc() {
 	g_main_camera.offset = {0.0, 0.0}
 	g_main_camera.target = {0.0, 0.0}
 	g_main_camera.rotation = 0.0
@@ -379,40 +228,48 @@ init :: #force_inline proc() {
 	})
 }
 
-update :: #force_inline proc() {
-	default_control_system()
-	default_camera_system()
-	default_projectile_system()
-	default_follow_system()
+shutdown :: #force_inline proc() {
+	delete(g_map.tiles)
 }
 
-draw :: #force_inline proc() {
+update :: #force_inline proc() {
+	default_control_system()
+
+	default_projectile_system()
+	default_follow_system()
+
+	default_camera_system()
 	default_sprite_system()
 }
 
 main :: proc() {
-	init()
+	default_settings()
 
 	rl.InitWindow(1600, 900, "rotmggame")
 	defer rl.CloseWindow()
 
+	make_renderer()
+	defer delete_renderer()
+
 	g_sprites = make_sprites()
 	defer delete_sprites(g_sprites)
+	
+	make_ecs()
+	defer delete_ecs()
+
+	init()
 
 	pause : bool = false
 
 	for !rl.WindowShouldClose() {
 		g_dt = rl.GetFrameTime()
+
 		if pause do g_dt = 0
 		if rl.IsKeyPressed(.P) do pause = !pause
-
-		rl.BeginDrawing()
-		rl.ClearBackground({255, 0, 255, 255})
-		rl.BeginMode2D(g_main_camera)
+		
 		update()
-		draw()
-		rl.EndMode2D()
-		rl.EndDrawing()
+		render()
+
 		free_all(context.temp_allocator)
 	}
 }
