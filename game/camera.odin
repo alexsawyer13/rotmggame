@@ -35,8 +35,8 @@ screen_to_world_space :: proc(pos : rl.Vector2) -> rl.Vector2 {
 
 	// CW rotation, looks like CCW
 	unshifted := rl.Vector2 {
-		cos * unrotated.x - sin * unrotated.y,
-		sin * unrotated.x + cos * unrotated.y
+		cos * unrotated.x + sin * unrotated.y,
+		- sin * unrotated.x + cos * unrotated.y
 	}
 
 	world := unshifted + g_camera.target
