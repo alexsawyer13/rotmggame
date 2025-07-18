@@ -11,6 +11,7 @@ update_camera_component :: #force_inline proc(c : ^Camera_Component) {
 			f32(g_window_half_width),
 			f32(g_window_half_height)
 		}
+		g_camera.zoom = 100
 	}
 }
 
@@ -31,7 +32,7 @@ screen_to_world_space :: proc(pos : rl.Vector2) -> rl.Vector2 {
 	sin := math.sin(g_camera.rotation * math.RAD_PER_DEG)
 	cos := math.cos(g_camera.rotation * math.RAD_PER_DEG)
 
-	unrotated := (pos - g_window_half_size) / g_camera.zoom
+	unrotated := (pos - g_camera.offset) / g_camera.zoom
 
 	// CW rotation, looks like CCW
 	unshifted := rl.Vector2 {
