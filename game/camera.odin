@@ -8,7 +8,7 @@ update_camera_component :: #force_inline proc(c : ^Camera_Component) {
 		g_camera.target = get_transform_component(c.transform).pos
 		g_camera.rotation = -get_transform_component(c.transform).rot // CW rotation
 		g_camera.offset = {
-			f32(g_window_half_width),
+			f32(g_window_half_width) - f32(g_window_half_height) * UI_ASPECT_RATIO,
 			f32(g_window_half_height)
 		}
 		g_camera.zoom = 100

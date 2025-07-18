@@ -79,12 +79,16 @@ render :: proc() {
 				x = s.pos.x, y = s.pos.y,
 				width = s.size.x, height = s.size.y
 			}),
-			0.05,
+			0.03,
 			s.colour
 			)
 	}
 
 	rl.EndMode2D()
+
+	ui_size := i32(UI_ASPECT_RATIO * f32(g_window_height))
+	rl.DrawRectangle(g_window_width - ui_size, 0, ui_size, g_window_height, rl.GRAY)
+
 	rl.EndDrawing()
 
 	clear(&g_renderer.world_sprites)

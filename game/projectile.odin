@@ -1,5 +1,6 @@
 package game
 
+import "core:math"
 import "core:time"
 import rl "vendor:raylib"
 
@@ -7,12 +8,12 @@ create_projectile :: proc(pos, dir : rl.Vector2, speed, lifetime_s : f32) -> Ent
 	e := make_entity()
 	t := add_transform_component(e, {
 		pos = pos,
-		size = {0.1, 0.1},
-		rot = 0.0
+		size = {0.4, 0.25},
+		rot = math.atan2(dir.y, dir.x) * math.DEG_PER_RAD
 	})
 	add_sprite_component(e, {
 		transform = t,
-		sprite = .Sprite_Dirt
+		sprite = .Sprite_Projectile
 	})
 	c := add_rect_collider_component(e, {
 		entity = e,

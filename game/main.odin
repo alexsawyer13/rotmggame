@@ -26,6 +26,8 @@ Settings :: struct {
 	reset_rot_key : rl.KeyboardKey
 }
 
+UI_ASPECT_RATIO :: 0.35
+
 g_renderer : Renderer
 g_sprites : [SpriteType]Sprite
 g_settings : Settings
@@ -45,7 +47,7 @@ g_player : Entity_Handle
 
 g_dt : f32
 
-DEBUG_DRAW_COLLIDERS :: true
+DEBUG_DRAW_COLLIDERS :: false
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -160,6 +162,14 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 		dir := rl.Vector2Normalize(mpos - t.pos)
 		create_projectile(t.pos, dir, 10.0, 5.0)
 	}
+
+	if rl.IsKeyPressed(.SPACE) {
+		NUM_PROJECTILES :: 10
+		for i in 0..<NUM_PROJECTILES {
+			angle : f32 = 2.0 * f32(math.PI) * f32(i) / NUM_PROJECTILES
+			create_projectile(t.pos, {math.cos(angle), math.sin(angle)}, 10.0, 5.0)
+		}
+	}
 }
 
 update_follow_component :: proc(c : ^Follow_Component) {
@@ -205,7 +215,7 @@ init :: #force_inline proc() {
 	add_follow_component(slime3, {
 		transform = get_transform_handle(slime3),
 		target = get_transform_handle(player),
-		speed = 3.0
+		speed = 2.0
 	})
 
 	g_map = generate_map(rand.uint64(), 1000, 1000)

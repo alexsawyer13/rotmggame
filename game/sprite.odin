@@ -18,6 +18,7 @@ SpriteType :: enum {
 	 Sprite_Archer ,
 	 Sprite_None ,
 	 Sprite_Stone ,
+	 Sprite_Projectile ,
 	 Sprite_Dirt ,
 }
 
@@ -60,6 +61,12 @@ make_sprites :: proc() -> [SpriteType]Sprite {
 		texture = rl.LoadTexture("sprites/stone.png")
 	}
 
+	sprites[.Sprite_Projectile] = {
+		width = 8,
+		height = 5,
+		texture = rl.LoadTexture("sprites/projectile.png")
+	}
+
 	sprites[.Sprite_Dirt] = {
 		width = 8,
 		height = 8,
@@ -76,6 +83,7 @@ delete_sprites :: proc(sprites : [SpriteType]Sprite) {
 	rl.UnloadTexture(sprites[.Sprite_Archer].texture)
 	rl.UnloadTexture(sprites[.Sprite_None].texture)
 	rl.UnloadTexture(sprites[.Sprite_Stone].texture)
+	rl.UnloadTexture(sprites[.Sprite_Projectile].texture)
 	rl.UnloadTexture(sprites[.Sprite_Dirt].texture)
 }
 
