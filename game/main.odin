@@ -100,10 +100,6 @@ create_slime :: proc(pos : rl.Vector2) -> Entity_Handle {
 	return e
 }
 
-update_transform_component :: #force_inline proc(t : ^Transform_Component) {
-
-}
-
 update_control_component :: #force_inline proc(c : ^Control_Component) {
 	t : ^Transform_Component = get_transform_component(c.transform)
 	if t == nil do return
@@ -230,21 +226,21 @@ shutdown :: #force_inline proc() {
 }
 
 update :: #force_inline proc() {
-	default_control_system()
+	control_component_foreach(update_control_component)
 
-	default_projectile_system()
-	default_follow_system()
+	projectile_component_foreach(update_projectile_component)
+	follow_component_foreach(update_follow_component)
 
-	default_rect_collider_system()
+	rect_collider_component_foreach(update_rect_collider_component)
 
-	default_camera_system()
+	camera_component_foreach(update_camera_component)
 	t := get_transform_component(g_player)
 	draw_map(g_map, rl.Rectangle {
 		x = t.pos.x - 20.0,
 		y = t.pos.y - 20.0,
 		width = 40.0, height = 40.0
 	})
-	default_sprite_system()
+	sprite_component_foreach(update_sprite_component)
 }
 
 update_screen_size :: proc(width, height : i32) {

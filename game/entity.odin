@@ -136,10 +136,10 @@ get_transform_component :: proc {
 	get_transform_component_comp,
 }
 
-default_transform_system :: proc() {
+transform_component_foreach :: proc(f : proc(^Transform_Component)) {
 	for &c in g_ecs.transform_components.items {
 		if c.removed do continue
-		update_transform_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Sprite component -----
@@ -188,10 +188,10 @@ get_sprite_component :: proc {
 	get_sprite_component_comp,
 }
 
-default_sprite_system :: proc() {
+sprite_component_foreach :: proc(f : proc(^Sprite_Component)) {
 	for &c in g_ecs.sprite_components.items {
 		if c.removed do continue
-		update_sprite_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Control component -----
@@ -240,10 +240,10 @@ get_control_component :: proc {
 	get_control_component_comp,
 }
 
-default_control_system :: proc() {
+control_component_foreach :: proc(f : proc(^Control_Component)) {
 	for &c in g_ecs.control_components.items {
 		if c.removed do continue
-		update_control_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Camera component -----
@@ -292,10 +292,10 @@ get_camera_component :: proc {
 	get_camera_component_comp,
 }
 
-default_camera_system :: proc() {
+camera_component_foreach :: proc(f : proc(^Camera_Component)) {
 	for &c in g_ecs.camera_components.items {
 		if c.removed do continue
-		update_camera_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Projectile component -----
@@ -344,10 +344,10 @@ get_projectile_component :: proc {
 	get_projectile_component_comp,
 }
 
-default_projectile_system :: proc() {
+projectile_component_foreach :: proc(f : proc(^Projectile_Component)) {
 	for &c in g_ecs.projectile_components.items {
 		if c.removed do continue
-		update_projectile_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Rect_Collider component -----
@@ -396,10 +396,10 @@ get_rect_collider_component :: proc {
 	get_rect_collider_component_comp,
 }
 
-default_rect_collider_system :: proc() {
+rect_collider_component_foreach :: proc(f : proc(^Rect_Collider_Component)) {
 	for &c in g_ecs.rect_collider_components.items {
 		if c.removed do continue
-		update_rect_collider_component(&c.item)
+		f(&c.item)
 	}
 }
 // ----- Follow component -----
@@ -448,9 +448,9 @@ get_follow_component :: proc {
 	get_follow_component_comp,
 }
 
-default_follow_system :: proc() {
+follow_component_foreach :: proc(f : proc(^Follow_Component)) {
 	for &c in g_ecs.follow_components.items {
 		if c.removed do continue
-		update_follow_component(&c.item)
+		f(&c.item)
 	}
 }
