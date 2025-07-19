@@ -51,7 +51,7 @@ g_player : Entity_Handle
 
 g_dt : f32
 
-DEBUG_DRAW_COLLIDERS :: false
+DEBUG_DRAW_COLLIDERS :: true
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -78,24 +78,6 @@ create_player :: proc() -> Entity_Handle {
 		transform = t,
 		zoom = 10.0,
 		main_camera = true
-	})
-	return e
-}
-
-create_slime :: proc(pos : rl.Vector2) -> Entity_Handle {
-	e : Entity_Handle = make_entity()
-	t := add_transform_component(e, {
-		pos = pos,
-		size = {0.8, 0.8}
-	})
-	add_rect_collider_component(e, {
-		entity = e,
-		transform = t,
-		tags = {.Collider_Enemy}
-	})
-	add_sprite_component(e, {
-		transform = t,
-		sprite = .Sprite_Slime,
 	})
 	return e
 }
@@ -181,6 +163,12 @@ update_follow_component :: proc(c : ^Follow_Component) {
 	transform.pos += rl.Vector2Normalize(target.pos - transform.pos) * c.speed * g_dt
 }
 
+update_attribute_component :: proc(a : ^Attribute_Component) {
+	transform := get_transform_component(a.transform)
+	if transform == nil do return
+
+	//draw_world_sprite_centre()
+}
 
 default_settings :: #force_inline proc() {
 	g_settings.rot_speed = 100.0
@@ -230,17 +218,20 @@ update :: #force_inline proc() {
 
 	projectile_component_foreach(update_projectile_component)
 	follow_component_foreach(update_follow_component)
+	attribute_component_foreach(update_attribute_component)
 
-	rect_collider_component_foreach(update_rect_collider_component)
 
 	camera_component_foreach(update_camera_component)
+
 	t := get_transform_component(g_player)
 	draw_map(g_map, rl.Rectangle {
 		x = t.pos.x - 20.0,
 		y = t.pos.y - 20.0,
 		width = 40.0, height = 40.0
 	})
+
 	sprite_component_foreach(update_sprite_component)
+	rect_collider_component_foreach(update_rect_collider_component)
 }
 
 update_screen_size :: proc(width, height : i32) {

@@ -2,6 +2,12 @@ package game
 
 import rl "vendor:raylib"
 
+Rect_Collider_Component :: struct {
+	entity    : Entity_Handle,
+	transform : Transform_Handle,
+	tags      : bit_set[Collider_Tag],
+}
+
 Collider_Tag :: enum {
 	Collider_Player,
 	Collider_Enemy,
@@ -49,6 +55,6 @@ update_rect_collider_component :: #force_inline proc(c : ^Rect_Collider_Componen
 	when DEBUG_DRAW_COLLIDERS {
 		t := get_transform_component(c.transform)
 		if t == nil do return
-		draw_debug_outline_centre(t.pos, t.size, rl.RED)
+		draw_world_outline_centre(t.pos, t.size, rl.RED)
 	}
 }

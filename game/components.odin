@@ -9,20 +9,9 @@ Transform_Component :: struct {
 	rot  : f32,
 }
 
-Sprite_Component :: struct {
-	transform : Transform_Handle,
-	sprite    : SpriteType,
-}
-
 Control_Component :: struct {
 	transform : Transform_Handle,
 	speed     : f32,
-}
-
-Camera_Component :: struct {
-	transform   : Transform_Handle,
-	zoom        : f32, // Number of world space units in the width of the viewport
-	main_camera : bool,
 }
 
 Projectile_Component :: struct {
@@ -35,12 +24,6 @@ Projectile_Component :: struct {
 
 	birth      : time.Time,
 	lifetime_s : f32,
-}
-
-Rect_Collider_Component :: struct {
-	entity    : Entity_Handle,
-	transform : Transform_Handle,
-	tags      : bit_set[Collider_Tag],
 }
 
 Follow_Component :: struct {

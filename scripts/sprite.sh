@@ -27,6 +27,11 @@ done
 
 write  "}"
 write  ""
+write "Sprite_Component :: struct {"
+write "	transform : Transform_Handle,"
+write "	sprite    : SpriteType,"
+write "}"
+write ""
 
 write  "make_sprites :: proc() -> [SpriteType]Sprite {"
 write  "\tsprites : [SpriteType]Sprite"
