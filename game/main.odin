@@ -27,6 +27,7 @@ Settings :: struct {
 }
 
 UI_ASPECT_RATIO :: 0.35
+INVERSE_UI_ASPECT_RATIO :: (1 / 0.35)
 
 g_renderer : Renderer
 g_sprites : [SpriteType]Sprite
@@ -51,7 +52,7 @@ g_player : Entity_Handle
 
 g_dt : f32
 
-DEBUG_DRAW_COLLIDERS :: true
+DEBUG_DRAW_COLLIDERS :: false
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -76,7 +77,7 @@ create_player :: proc() -> Entity_Handle {
 	})
 	add_camera_component(e, {
 		transform = t,
-		zoom = 10.0,
+		zoom = 13.0,
 		main_camera = true
 	})
 	return e
@@ -279,6 +280,8 @@ main :: proc() {
 
 		if pause do g_dt = 0
 		if rl.IsKeyPressed(.P) do pause = !pause
+
+		draw_ui_rect_centre({0.175, 0.5}, {0.35, 0.35}, rl.RED)
 		
 		update()
 		render()
