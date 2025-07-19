@@ -6,12 +6,9 @@ import rl "vendor:raylib"
 update_camera_component :: #force_inline proc(c : ^Camera_Component) {
 	if c.main_camera {
 		g_camera.target = get_transform_component(c.transform).pos
-		g_camera.rotation = -get_transform_component(c.transform).rot // CW rotation
-		g_camera.offset = {
-			f32(g_window_half_width) - f32(g_window_half_height) * UI_ASPECT_RATIO,
-			f32(g_window_half_height)
-		}
-		g_camera.zoom = 100
+		g_camera.rotation = -get_transform_component(c.transform).rot // Camera rotates clockwise
+		g_camera.offset = g_viewport_half_size
+		g_camera.zoom = (g_viewport_size.x / c.zoom) // Pixels per world space unit
 	}
 }
 

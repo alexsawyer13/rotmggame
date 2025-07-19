@@ -34,10 +34,14 @@ g_settings : Settings
 
 g_window_width : i32
 g_window_height : i32
-g_window_half_width : i32
-g_window_half_height : i32
 g_window_size : rl.Vector2
 g_window_half_size : rl.Vector2
+
+g_viewport_pos : rl.Vector2
+g_viewport_size : rl.Vector2
+g_viewport_half_size : rl.Vector2
+g_ui_pos : rl.Vector2
+g_ui_size : rl.Vector2
 
 g_camera : rl.Camera2D
 g_ecs : Ecs
@@ -72,7 +76,7 @@ create_player :: proc() -> Entity_Handle {
 	})
 	add_camera_component(e, {
 		transform = t,
-		zoom = 100.0,
+		zoom = 10.0,
 		main_camera = true
 	})
 	return e
@@ -243,17 +247,25 @@ update :: #force_inline proc() {
 	default_sprite_system()
 }
 
-main :: proc() {
-	default_settings()
-
-	g_window_width = g_settings.default_window_width
-	g_window_height = g_settings.default_window_height
+update_screen_size :: proc(width, height : i32) {
+	g_window_width = width
+	g_window_height = height
 
 	g_window_size = {f32(g_window_width), f32(g_window_height)}
 	g_window_half_size = g_window_size * 0.5			
 
-	g_window_half_width = i32(g_window_half_size.x)
-	g_window_half_height = i32(g_window_half_size.y)
+	g_ui_size = {UI_ASPECT_RATIO * g_window_size.y, g_window_size.y}
+	g_ui_pos = {g_window_size.x - g_ui_size.x, 0.0}
+
+	g_viewport_size = {g_window_size.x - g_ui_size.x, g_window_size.y}
+	g_viewport_half_size = 0.5 * g_viewport_size
+	g_viewport_pos = {0.0, 0.0}
+}
+
+main :: proc() {
+	default_settings()
+
+	update_screen_size(g_settings.default_window_width, g_settings.default_window_height)
 
 	rl.InitWindow(g_window_width, g_window_height, "rotmggame")
 	defer rl.CloseWindow()
@@ -275,14 +287,7 @@ main :: proc() {
 		g_dt = rl.GetFrameTime()
 		
 		if rl.IsWindowResized() {
-			g_window_width = rl.GetScreenWidth()
-			g_window_height = rl.GetScreenHeight()
-
-			g_window_size = {f32(g_window_width), f32(g_window_height)}
-			g_window_half_size = g_window_size * 0.5			
-
-			g_window_half_width = i32(g_window_half_size.x)
-			g_window_half_height = i32(g_window_half_size.y)
+			update_screen_size(rl.GetScreenWidth(), rl.GetScreenHeight())
 		}
 
 		if pause do g_dt = 0

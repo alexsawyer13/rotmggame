@@ -21,7 +21,7 @@ Control_Component :: struct {
 
 Camera_Component :: struct {
 	transform   : Transform_Handle,
-	zoom        : f32,
+	zoom        : f32, // Number of world space units in the width of the viewport
 	main_camera : bool,
 }
 
