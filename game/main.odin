@@ -52,7 +52,7 @@ g_player : Entity_Handle
 
 g_dt : f32
 
-DEBUG_DRAW_COLLIDERS :: false
+DEBUG_DRAW_COLLIDERS :: true
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -153,6 +153,11 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 			create_projectile(t.pos, {math.cos(angle), math.sin(angle)}, 10.0, 5.0)
 		}
 	}
+
+	if rl.IsKeyPressed(.B) {
+		mpos := screen_to_world_space(rl.GetMousePosition())
+		create_bandit_pack(mpos)
+	}
 }
 
 update_follow_component :: proc(c : ^Follow_Component) {
@@ -221,6 +226,9 @@ update :: #force_inline proc() {
 	follow_component_foreach(update_follow_component)
 	attribute_component_foreach(update_attribute_component)
 
+	bandit_king_component_foreach(update_bandit_king_component)
+	bandit_component_foreach(update_bandit_component)
+
 
 	camera_component_foreach(update_camera_component)
 
@@ -281,7 +289,7 @@ main :: proc() {
 		if pause do g_dt = 0
 		if rl.IsKeyPressed(.P) do pause = !pause
 
-		draw_ui_rect_centre({0.175, 0.5}, {0.35, 0.35}, rl.RED)
+		draw_rect_centre({0.175, 0.5}, {0.35, 0.35}, rl.RED, .LayerUi)
 		
 		update()
 		render()

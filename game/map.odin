@@ -74,7 +74,7 @@ draw_map :: proc(m : Map, range : rl.Rectangle) {
 			case .Tile_Grass:
 				s = .Sprite_Grass
 			}
-			draw_world_sprite_tl(rl.Vector2 {f32(x), f32(y)}, {1.0, 1.0}, s)
+			draw_sprite_tl(rl.Vector2 {f32(x), f32(y)}, {1.0, 1.0}, s, .LayerWorld)
 		}
 	}
 }

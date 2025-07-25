@@ -12,96 +12,128 @@ Sprite :: struct {
 }
 
 SpriteType :: enum {
-	 Sprite_Wizard ,
-	 Sprite_Slime ,
-	 Sprite_Grass ,
-	 Sprite_Slimeball ,
 	 Sprite_Archer ,
-	 Sprite_None ,
-	 Sprite_Stone ,
-	 Sprite_Projectile ,
+	 Sprite_Grass ,
 	 Sprite_Dirt ,
+	 Sprite_Bandit_Healer ,
+	 Sprite_Slime ,
+	 Sprite_Projectile ,
+	 Sprite_Slimeball ,
+	 Sprite_Bandit_Rogue ,
+	 Sprite_Bandit_King ,
+	 Sprite_Bandit ,
+	 Sprite_Stone ,
+	 Sprite_Wizard ,
+	 Sprite_None ,
 }
 
 Sprite_Component :: struct {
-transform : Transform_Handle,
-sprite : SpriteType,
+	transform : Transform_Handle,
+	sprite : SpriteType,
 }
 
 make_sprites :: proc() -> [SpriteType]Sprite {
 	sprites : [SpriteType]Sprite
 
-	sprites[.Sprite_Wizard] = {
+	sprites[.Sprite_Archer] = {
 		width = 8,
 		height = 8,
-		texture = rl.LoadTexture("sprites/wizard.png")
-	}
-
-	sprites[.Sprite_Slime] = {
-		width = 8,
-		height = 8,
-		texture = rl.LoadTexture("sprites/slime.png")
+		texture = rl.LoadTexture("sprites/Archer.png")
 	}
 
 	sprites[.Sprite_Grass] = {
 		width = 8,
 		height = 8,
-		texture = rl.LoadTexture("sprites/grass.png")
-	}
-
-	sprites[.Sprite_Slimeball] = {
-		width = 4,
-		height = 4,
-		texture = rl.LoadTexture("sprites/slimeball.png")
-	}
-
-	sprites[.Sprite_Archer] = {
-		width = 8,
-		height = 8,
-		texture = rl.LoadTexture("sprites/archer.png")
-	}
-
-	sprites[.Sprite_None] = {
-		width = 2,
-		height = 2,
-		texture = rl.LoadTexture("sprites/none.png")
-	}
-
-	sprites[.Sprite_Stone] = {
-		width = 8,
-		height = 8,
-		texture = rl.LoadTexture("sprites/stone.png")
-	}
-
-	sprites[.Sprite_Projectile] = {
-		width = 8,
-		height = 5,
-		texture = rl.LoadTexture("sprites/projectile.png")
+		texture = rl.LoadTexture("sprites/Grass.png")
 	}
 
 	sprites[.Sprite_Dirt] = {
 		width = 8,
 		height = 8,
-		texture = rl.LoadTexture("sprites/dirt.png")
+		texture = rl.LoadTexture("sprites/Dirt.png")
+	}
+
+	sprites[.Sprite_Bandit_Healer] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Bandit_Healer.png")
+	}
+
+	sprites[.Sprite_Slime] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Slime.png")
+	}
+
+	sprites[.Sprite_Projectile] = {
+		width = 8,
+		height = 5,
+		texture = rl.LoadTexture("sprites/Projectile.png")
+	}
+
+	sprites[.Sprite_Slimeball] = {
+		width = 4,
+		height = 4,
+		texture = rl.LoadTexture("sprites/Slimeball.png")
+	}
+
+	sprites[.Sprite_Bandit_Rogue] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Bandit_Rogue.png")
+	}
+
+	sprites[.Sprite_Bandit_King] = {
+		width = 16,
+		height = 16,
+		texture = rl.LoadTexture("sprites/Bandit_King.png")
+	}
+
+	sprites[.Sprite_Bandit] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Bandit.png")
+	}
+
+	sprites[.Sprite_Stone] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Stone.png")
+	}
+
+	sprites[.Sprite_Wizard] = {
+		width = 8,
+		height = 8,
+		texture = rl.LoadTexture("sprites/Wizard.png")
+	}
+
+	sprites[.Sprite_None] = {
+		width = 2,
+		height = 2,
+		texture = rl.LoadTexture("sprites/None.png")
 	}
 
 	return sprites
 }
 
 delete_sprites :: proc(sprites : [SpriteType]Sprite) {
-	rl.UnloadTexture(sprites[.Sprite_Wizard].texture)
-	rl.UnloadTexture(sprites[.Sprite_Slime].texture)
-	rl.UnloadTexture(sprites[.Sprite_Grass].texture)
-	rl.UnloadTexture(sprites[.Sprite_Slimeball].texture)
 	rl.UnloadTexture(sprites[.Sprite_Archer].texture)
-	rl.UnloadTexture(sprites[.Sprite_None].texture)
-	rl.UnloadTexture(sprites[.Sprite_Stone].texture)
-	rl.UnloadTexture(sprites[.Sprite_Projectile].texture)
+	rl.UnloadTexture(sprites[.Sprite_Grass].texture)
 	rl.UnloadTexture(sprites[.Sprite_Dirt].texture)
+	rl.UnloadTexture(sprites[.Sprite_Bandit_Healer].texture)
+	rl.UnloadTexture(sprites[.Sprite_Slime].texture)
+	rl.UnloadTexture(sprites[.Sprite_Projectile].texture)
+	rl.UnloadTexture(sprites[.Sprite_Slimeball].texture)
+	rl.UnloadTexture(sprites[.Sprite_Bandit_Rogue].texture)
+	rl.UnloadTexture(sprites[.Sprite_Bandit_King].texture)
+	rl.UnloadTexture(sprites[.Sprite_Bandit].texture)
+	rl.UnloadTexture(sprites[.Sprite_Stone].texture)
+	rl.UnloadTexture(sprites[.Sprite_Wizard].texture)
+	rl.UnloadTexture(sprites[.Sprite_None].texture)
 }
 
 update_sprite_component :: #force_inline proc(s : ^Sprite_Component) {
 	t : ^Transform_Component = get_transform_component(s.transform)
 	if t == nil do return
-	draw_world_sprite_centre(t.pos, t.size, s.sprite, t.rot)
+	draw_sprite_centre(t.pos, t.size, s.sprite, .LayerWorld, t.rot)
 }

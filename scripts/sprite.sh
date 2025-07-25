@@ -21,15 +21,15 @@ write ""
 write  "SpriteType :: enum {"
 
 for sprite in $SPRITES; do
-	enum_name=$(echo $sprite | sed -E "s/sprites\/([a-z])(.*)\.png/Sprite_\U\1\E\2/")
+	enum_name=$(echo $sprite | sed -E "s/sprites\/(.*)\.png/Sprite_\1/")
 	write  "\t" $enum_name ,
 done
 
 write  "}"
 write  ""
 write "Sprite_Component :: struct {"
-write "	transform : Transform_Handle,"
-write "	sprite    : SpriteType,"
+write "\ttransform : Transform_Handle,"
+write "\tsprite    : SpriteType,"
 write "}"
 write ""
 
@@ -38,8 +38,8 @@ write  "\tsprites : [SpriteType]Sprite"
 write  ""
 
 for sprite in $SPRITES; do
-	enum_name=$(echo $sprite | sed -E "s/sprites\/([a-z])(.*)\.png/Sprite_\U\1\E\2/")
-	size=$(magick identify $sprite | sed -E "s/[a-z0-9A-Z/.]* PNG ([0-9]*)x([0-9]*) .*/\1 \2/")
+	enum_name=$(echo $sprite | sed -E "s/sprites\/(.*)\.png/Sprite_\1/")
+	size=$(magick identify $sprite | sed -E "s/[a-z0-9A-Z/._]* PNG ([0-9]*)x([0-9]*) .*/\1 \2/")
 	x=$(echo $size | awk '{print $1}')
 	y=$(echo $size | awk '{print $2}')
 
@@ -56,7 +56,7 @@ write  "}"
 write  ""
 write  "delete_sprites :: proc(sprites : [SpriteType]Sprite) {"
 for sprite in $SPRITES; do
-	enum_name=$(echo $sprite | sed -E "s/sprites\/([a-z])(.*)\.png/Sprite_\U\1\E\2/")
+	enum_name=$(echo $sprite | sed -E "s/sprites\/(.*)\.png/Sprite_\1/")
 	write  "\trl.UnloadTexture(sprites[.$enum_name].texture)"
 done
 write  "}"
@@ -64,5 +64,5 @@ write ""
 write "update_sprite_component :: #force_inline proc(s : ^Sprite_Component) {"
 write "\tt : ^Transform_Component = get_transform_component(s.transform)"
 write "\tif t == nil do return"
-write "\tdraw_world_sprite_centre(t.pos, t.size, s.sprite, t.rot)"
+write "\tdraw_sprite_centre(t.pos, t.size, s.sprite, .LayerWorld, t.rot)"
 write "}"

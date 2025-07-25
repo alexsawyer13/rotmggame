@@ -44,73 +44,31 @@ delete_renderer :: proc() {
 	}
 }
 
-draw_world_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerWorld], RectDrawInfo {
+draw_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, layer : DrawLayer, rot : f32 = 0.0) {
+	append(&g_renderer.rects[layer], RectDrawInfo {
 		pos = pos, size = size, rot = rot, origin = 0.5 * size,
 		type = .DrawSprite, sprite = sprite
 	})
 }
 
-draw_world_rect_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerWorld], RectDrawInfo {
+draw_rect_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, layer : DrawLayer, rot : f32 = 0.0) {
+	append(&g_renderer.rects[layer], RectDrawInfo {
 		pos = pos, size = size, rot = rot, origin = 0.5 * size,
 		type = .DrawRect, colour = colour
 	})
 }
 
-draw_world_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerWorld], RectDrawInfo {
+draw_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, layer : DrawLayer, rot : f32 = 0.0) {
+	append(&g_renderer.rects[layer], RectDrawInfo {
 		pos = pos, size = size, rot = rot, origin = 0.5 * size,
 		type = .DrawOutline, colour = colour, thickness = 0.05
 	})
 }
 
-draw_world_sprite_tl :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerWorld], RectDrawInfo {
+draw_sprite_tl :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, layer : DrawLayer, rot : f32 = 0.0) {
+	append(&g_renderer.rects[layer], RectDrawInfo {
 		pos = pos, size = size, rot = rot, origin = {0.0, 0.0},
 		type = .DrawSprite, sprite = sprite
-	})
-}
-
-draw_ui_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerUi], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawSprite, sprite = sprite
-	})
-}
-
-draw_ui_rect_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerUi], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawRect, colour = colour
-	})
-}
-
-draw_ui_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerUi], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawOutline, colour = colour, thickness = 0.05
-	})
-}
-
-draw_debug_sprite_centre :: #force_inline proc(pos, size : rl.Vector2, sprite : SpriteType, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerDebug], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawSprite, sprite = sprite
-	})
-}
-
-draw_debug_rect_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerDebug], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawRect, colour = colour
-	})
-}
-
-draw_debug_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, rot : f32 = 0.0) {
-	append(&g_renderer.rects[.LayerDebug], RectDrawInfo {
-		pos = pos, size = size, rot = rot, origin = 0.5 * size,
-		type = .DrawOutline, colour = colour, thickness = 0.05
 	})
 }
 

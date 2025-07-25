@@ -18,7 +18,7 @@ create_projectile :: proc(pos, dir : rl.Vector2, speed, lifetime_s : f32) -> Ent
 	c := add_rect_collider_component(e, {
 		entity = e,
 		transform = t,
-		tags = {.Collider_Projectile}
+		tags = {.Collider_Player_Projectile}
 	})
 	add_projectile_component(e, {
 		entity = e,

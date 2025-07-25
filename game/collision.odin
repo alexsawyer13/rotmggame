@@ -11,7 +11,8 @@ Rect_Collider_Component :: struct {
 Collider_Tag :: enum {
 	Collider_Player,
 	Collider_Enemy,
-	Collider_Projectile,
+	Collider_Player_Projectile,
+	Collider_Enemy_Projectile,
 }
 
 rect_rect_collision :: proc(r1, r2 : rl.Rectangle) -> bool {
@@ -55,6 +56,6 @@ update_rect_collider_component :: #force_inline proc(c : ^Rect_Collider_Componen
 	when DEBUG_DRAW_COLLIDERS {
 		t := get_transform_component(c.transform)
 		if t == nil do return
-		draw_world_outline_centre(t.pos, t.size, rl.RED)
+		draw_outline_centre(t.pos, t.size, rl.RED, .LayerDebug)
 	}
 }
