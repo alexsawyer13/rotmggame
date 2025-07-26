@@ -10,24 +10,23 @@ Transform_Component :: struct {
 }
 
 Control_Component :: struct {
-	transform : Transform_Handle,
-	speed     : f32,
+	transform    : Transform_Handle,
+	camera       : Camera_Handle,
+	speed        : f32,
+	scroll_speed : f32,
 }
 
-Projectile_Component :: struct {
+Target_Flags :: enum {
+	Target_Player,
+	Target_Enemy,
+
+	Target_Kill_On_Death,
+	Target_Invulnerable,
+}
+
+Target_Component :: struct {
 	entity     : Entity_Handle,
-	transform  : Transform_Handle,
-	collider   : Rect_Collider_Handle,
-
-	dir        : rl.Vector2,
-	speed      : rl.Vector2,
-
-	birth      : time.Time,
-	lifetime_s : f32,
-}
-
-Follow_Component :: struct {
-	transform : Transform_Handle,
-	target    : Transform_Handle,
-	speed     : f32,
+	health     : i32,
+	max_health : i32,
+	flags      : bit_set[Target_Flags],
 }

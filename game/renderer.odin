@@ -58,6 +58,13 @@ draw_rect_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color
 	})
 }
 
+draw_rect_tl :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, layer : DrawLayer, rot : f32 = 0.0) {
+	append(&g_renderer.rects[layer], RectDrawInfo {
+		pos = pos, size = size, rot = rot, origin = {0.0, 0.0},
+		type = .DrawRect, colour = colour
+	})
+}
+
 draw_outline_centre :: #force_inline proc(pos, size : rl.Vector2, colour : rl.Color, layer : DrawLayer, rot : f32 = 0.0) {
 	append(&g_renderer.rects[layer], RectDrawInfo {
 		pos = pos, size = size, rot = rot, origin = 0.5 * size,

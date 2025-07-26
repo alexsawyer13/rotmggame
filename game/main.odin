@@ -52,7 +52,7 @@ g_player : Entity_Handle
 
 g_dt : f32
 
-DEBUG_DRAW_COLLIDERS :: true
+g_debug_draw_colliders : bool = false
 
 create_player :: proc() -> Entity_Handle {
 	e : Entity_Handle = make_entity()
@@ -64,31 +64,41 @@ create_player :: proc() -> Entity_Handle {
 	add_rect_collider_component(e, {
 		entity = e,
 		transform = t,
-		tags = {.Collider_Player}
+		tags = {.Collider_Player, .Collider_Target}
 	})
 	add_sprite_component(e, {
 		transform = t,
 		sprite = .Sprite_Wizard
 	})
-
-	add_control_component(e, {
-		transform = t,
-		speed = 3.0,
-	})
-	add_camera_component(e, {
+	c := add_camera_component(e, {
 		transform = t,
 		zoom = 13.0,
 		main_camera = true
+	})
+	add_control_component(e, {
+		transform = t,
+		camera = c,
+		speed = 3.0,
+		scroll_speed = 1000.0
+	})
+	add_target_component(e, {
+		entity = e,
+		health = 100,
+		max_health = 100,
+		flags = {.Target_Player}
 	})
 	return e
 }
 
 update_control_component :: #force_inline proc(c : ^Control_Component) {
-	t : ^Transform_Component = get_transform_component(c.transform)
+	t := get_transform_component(c.transform)
+	cam := get_camera_component(c.camera)
 	if t == nil do return
+	if cam == nil do return
 
 	dir : rl.Vector2 = {0.0, 0.0}
 	rot : f32 = 0.0
+	scr : f32 = 0.0
 
 	cos := math.cos(t.rot * math.RAD_PER_DEG)
 	sin := math.sin(t.rot * math.RAD_PER_DEG)
@@ -128,6 +138,8 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 		rot -= 1
 	}
 
+	scr = rl.GetMouseWheelMove()
+
 	if !(dir.x == 0.0 && dir.y == 0.0) {
 		dir = rl.Vector2Normalize(dir)
 		t.pos.x += dir.x * c.speed * g_dt
@@ -136,6 +148,8 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 
 	t.rot += rot * g_settings.rot_speed * g_dt
 
+	cam.zoom = math.clamp(cam.zoom - scr * g_dt * c.scroll_speed, 5, 20)
+
 	if (rl.IsKeyPressed(g_settings.reset_rot_key)) {
 		t.rot = 0.0
 	}
@@ -143,14 +157,14 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 	if rl.IsMouseButtonPressed(.LEFT) {
 		mpos := screen_to_world_space(rl.GetMousePosition())
 		dir := rl.Vector2Normalize(mpos - t.pos)
-		create_projectile(t.pos, dir, 10.0, 5.0)
+		create_projectile(t.pos, dir, 10.0, 5.0, 20.0, {.Projectile_Hit_Enemy})
 	}
 
 	if rl.IsKeyPressed(.SPACE) {
 		NUM_PROJECTILES :: 10
 		for i in 0..<NUM_PROJECTILES {
 			angle : f32 = 2.0 * f32(math.PI) * f32(i) / NUM_PROJECTILES
-			create_projectile(t.pos, {math.cos(angle), math.sin(angle)}, 10.0, 5.0)
+			create_projectile(t.pos, {math.cos(angle), math.sin(angle)}, 10.0, 5.0, 2.0, {.Projectile_Hit_Enemy})
 		}
 	}
 
@@ -160,20 +174,26 @@ update_control_component :: #force_inline proc(c : ^Control_Component) {
 	}
 }
 
-update_follow_component :: proc(c : ^Follow_Component) {
-	transform := get_transform_component(c.transform)
-	if transform == nil do return
-	target := get_transform_component(c.target)
-	if target == nil do return
+update_target_component :: proc(a : ^Target_Component) {
+	if (a.health <= 0) && .Target_Kill_On_Death in a.flags {
+		remove_entity(a.entity)
+		return
+	}
 
-	transform.pos += rl.Vector2Normalize(target.pos - transform.pos) * c.speed * g_dt
-}
+	t := get_transform_component(a.entity)
+	if t == nil do return
 
-update_attribute_component :: proc(a : ^Attribute_Component) {
-	transform := get_transform_component(a.transform)
-	if transform == nil do return
+	// Render health bar
+	outline_pos := t.pos + {-t.size.x*0.5 + 0.1, t.size.y*0.5 + 0.1}
+	outline_size : rl.Vector2 = {t.size.x - 0.2, 0.1}
 
-	//draw_world_sprite_centre()
+	offset : rl.Vector2 = {0.02, 0.02}
+	bar_pos := outline_pos + offset
+	bar_size := outline_size - 2 * offset
+
+	draw_rect_tl(outline_pos, outline_size, rl.BLACK, .LayerDebug)
+	draw_rect_tl(bar_pos, bar_size, rl.RED, .LayerDebug)
+	draw_rect_tl(bar_pos, {bar_size.x * f32(a.health) / f32(a.max_health), bar_size.y}, rl.GREEN, .LayerDebug)
 }
 
 default_settings :: #force_inline proc() {
@@ -196,21 +216,6 @@ init :: #force_inline proc() {
 	g_camera.zoom = 100.0
 
 	player := create_player()
-	slime1 := create_slime({1.0, 1.0})
-	slime2 := create_slime({2.0, 2.0})
-	slime3 := create_slime({3.0, 3.0})
-
-	add_follow_component(slime2, {
-		transform = get_transform_handle(slime2),
-		target = get_transform_handle(player),
-		speed = 1.0
-	})
-
-	add_follow_component(slime3, {
-		transform = get_transform_handle(slime3),
-		target = get_transform_handle(player),
-		speed = 2.0
-	})
 
 	g_map = generate_map(rand.uint64(), 1000, 1000)
 }
@@ -222,13 +227,11 @@ shutdown :: #force_inline proc() {
 update :: #force_inline proc() {
 	control_component_foreach(update_control_component)
 
-	projectile_component_foreach(update_projectile_component)
-	follow_component_foreach(update_follow_component)
-	attribute_component_foreach(update_attribute_component)
-
 	bandit_king_component_foreach(update_bandit_king_component)
 	bandit_component_foreach(update_bandit_component)
 
+	projectile_component_foreach(update_projectile_component)
+	target_component_foreach(update_target_component)
 
 	camera_component_foreach(update_camera_component)
 
@@ -241,6 +244,12 @@ update :: #force_inline proc() {
 
 	sprite_component_foreach(update_sprite_component)
 	rect_collider_component_foreach(update_rect_collider_component)
+}
+
+debug :: #force_inline proc() {
+	if rl.IsKeyPressed(.F1) {
+		g_debug_draw_colliders = !g_debug_draw_colliders
+	}
 }
 
 update_screen_size :: proc(width, height : i32) {
@@ -290,7 +299,8 @@ main :: proc() {
 		if rl.IsKeyPressed(.P) do pause = !pause
 
 		draw_rect_centre({0.175, 0.5}, {0.35, 0.35}, rl.RED, .LayerUi)
-		
+
+		debug()
 		update()
 		render()
 

@@ -60,11 +60,17 @@ create_bandit_king :: proc(pos : rl.Vector2) -> Entity_Handle {
 	add_rect_collider_component(e, {
 		entity = e,
 		transform = t,
-		tags = {.Collider_Enemy}
+		tags = {.Collider_Target, .Collider_Enemy}
 	})
 	add_bandit_king_component(e, {
 		transform = t,
 		centre = pos
+	})
+	add_target_component(e, {
+		entity = e,
+		health = 100,
+		max_health = 100,
+		flags = {.Target_Enemy, .Target_Kill_On_Death}
 	})
 	return e
 }
@@ -90,11 +96,17 @@ create_bandit :: proc(pos : rl.Vector2, king : Bandit_King_Component) -> Entity_
 	add_rect_collider_component(e, {
 		entity = e,
 		transform = t,
-		tags = {.Collider_Enemy}
+		tags = {.Collider_Target, .Collider_Enemy}
 	})
 	add_bandit_component(e, {
 		transform = t,
 		king = king.transform,
+	})
+	add_target_component(e, {
+		entity = e,
+		health = 100,
+		max_health = 100,
+		flags = {.Target_Enemy, .Target_Kill_On_Death}
 	})
 	return e
 }

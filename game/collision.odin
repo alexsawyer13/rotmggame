@@ -2,17 +2,18 @@ package game
 
 import rl "vendor:raylib"
 
-Rect_Collider_Component :: struct {
-	entity    : Entity_Handle,
-	transform : Transform_Handle,
-	tags      : bit_set[Collider_Tag],
-}
-
 Collider_Tag :: enum {
+	Collider_Target,
 	Collider_Player,
 	Collider_Enemy,
 	Collider_Player_Projectile,
 	Collider_Enemy_Projectile,
+}
+
+Rect_Collider_Component :: struct {
+	entity    : Entity_Handle,
+	transform : Transform_Handle,
+	tags      : bit_set[Collider_Tag],
 }
 
 rect_rect_collision :: proc(r1, r2 : rl.Rectangle) -> bool {
@@ -53,7 +54,7 @@ get_first_collides_with_tag :: proc(collider : Rect_Collider_Component, tag : Co
 }
 
 update_rect_collider_component :: #force_inline proc(c : ^Rect_Collider_Component) {
-	when DEBUG_DRAW_COLLIDERS {
+	if g_debug_draw_colliders {
 		t := get_transform_component(c.transform)
 		if t == nil do return
 		draw_outline_centre(t.pos, t.size, rl.RED, .LayerDebug)
