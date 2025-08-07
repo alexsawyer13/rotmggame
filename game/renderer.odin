@@ -2,6 +2,7 @@ package game
 
 import "core:math"
 import rl "vendor:raylib"
+import sdl "vendor:sdl3"
 
 DrawType :: enum {
 	DrawSprite,
@@ -29,7 +30,7 @@ RectDrawInfo :: struct {
 }
 
 Renderer :: struct {
-	rects : [DrawLayer][dynamic]RectDrawInfo,
+	rects  : [DrawLayer][dynamic]RectDrawInfo,
 }
 
 make_renderer :: proc() {

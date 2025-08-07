@@ -4,7 +4,14 @@ import "core:math/rand"
 import "core:fmt"
 import "core:math"
 import "core:time"
+import "core:os"
+
+import sdl "vendor:sdl3"
 import rl "vendor:raylib"
+
+// TODO(Alex): Citations!
+// https://hamdy-elzanqali.medium.com/let-there-be-triangles-sdl-gpu-edition-bd82cf2ef615
+// https://moonside.games/posts/sdl-gpu-sprite-batcher/
 
 // TODO(Alex): add_##_component doesn't consider
 // whether a component already exists. It will
@@ -29,6 +36,8 @@ Settings :: struct {
 UI_ASPECT_RATIO :: 0.35
 INVERSE_UI_ASPECT_RATIO :: (1 / 0.35)
 
+g_window   : ^sdl.Window
+g_device   : ^sdl.GPUDevice
 g_settings : Settings
 
 g_renderer : Renderer
@@ -129,7 +138,219 @@ update_screen_size :: proc(width, height : i32) {
 	g_viewport_pos = {0.0, 0.0}
 }
 
+// Returns true if window should close
+// Returns false if not
+poll_events :: #force_inline proc() -> bool {
+	event : sdl.Event
+
+	for sdl.PollEvent(&event) {
+		if event.type == .WINDOW_CLOSE_REQUESTED {
+			return true
+		}
+	}
+
+	return false
+}
+
 main :: proc() {
+	if !sdl.Init({}) {
+		fmt.print("[ERROR] Failed to initialise SDL")
+		return
+	}
+
+	g_window := sdl.CreateWindow(
+		"Test window!",
+		g_settings.default_window_width,
+		g_settings.default_window_height,
+		{.RESIZABLE}
+	)
+	if g_window == nil {
+		fmt.println("[ERROR] Failed to create window")
+		return
+	}
+	defer sdl.DestroyWindow(g_window)
+
+	g_device = sdl.CreateGPUDevice({.SPIRV}, true, nil)
+	if g_device == nil {
+		fmt.println("[ERROR] Failed to create GPU device")
+		return
+	}
+	defer sdl.DestroyGPUDevice(g_device)
+
+	if !sdl.ClaimWindowForGPUDevice(g_device, g_window) {
+		fmt.println("[ERROR] Failed to link GPU to window")
+		return
+	}
+
+	vertices : []f32 = {
+	    0.0, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0,     // Top vertex
+    	-0.5, -0.5, 0.0, 1.0, 1.0, 0.0, 1.0,   // Bottom left vertex
+    	0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 1.0     // Bottom right vertex
+	}
+	
+	buffer_create_info : sdl.GPUBufferCreateInfo = {
+		size = size_of(vertices),
+		usage = {.VERTEX}
+	}
+	vertex_buffer := sdl.CreateGPUBuffer(g_device, buffer_create_info)
+	if vertex_buffer == nil {
+		fmt.println("[ERROR] Failed to create vertex buffer")
+		return
+	}
+	defer sdl.ReleaseGPUBuffer(g_device, vertex_buffer)
+
+	transfer_buffer_create_info : sdl.GPUTransferBufferCreateInfo = {
+		size = size_of(vertices),
+		usage = .UPLOAD
+	}
+	transfer_buffer := sdl.CreateGPUTransferBuffer(g_device, transfer_buffer_create_info)
+	if transfer_buffer == nil {
+		fmt.println("[ERROR] Failed to create transfer buffer")
+		return
+	}
+	defer sdl.ReleaseGPUTransferBuffer(g_device, transfer_buffer)
+
+	ptr := sdl.MapGPUTransferBuffer(g_device, transfer_buffer, false)
+	sdl.memcpy(ptr, raw_data(vertices), size_of(vertices))
+	sdl.UnmapGPUTransferBuffer(g_device, transfer_buffer) 
+
+	cmd_buffer := sdl.AcquireGPUCommandBuffer(g_device)
+	copy_pass := sdl.BeginGPUCopyPass(cmd_buffer)
+
+	transfer_buffer_location : sdl.GPUTransferBufferLocation = {
+		transfer_buffer = transfer_buffer,
+		offset = 0
+	}
+
+	gpu_buffer_region : sdl.GPUBufferRegion = {
+		buffer = vertex_buffer,
+		size = size_of(vertices),
+		offset = 0
+	}
+
+	sdl.UploadToGPUBuffer(copy_pass, transfer_buffer_location, gpu_buffer_region, true)
+
+	sdl.EndGPUCopyPass(copy_pass)
+	if !sdl.SubmitGPUCommandBuffer(cmd_buffer) {
+		fmt.println("[ERROR] Failed to subbmit GPU command buffer")
+		return
+	}
+
+	vertex_shader_src, vert_res := os.read_entire_file_from_filename("shaders/vertex.spv")
+	if !vert_res {
+		fmt.println("[ERROR] Failed to load vertex shader file")
+		return
+	}
+	
+	fragment_shader_src, frag_res := os.read_entire_file_from_filename("shaders/fragment.spv")
+	if !frag_res {
+		fmt.println("[ERROR] Failed to load fragment shader file")
+		return
+	}
+
+	vertex_shader_create_info : sdl.GPUShaderCreateInfo	= {
+		code = raw_data(vertex_shader_src),
+		code_size = len(vertex_shader_src),
+		entrypoint = "main",
+		format = {.SPIRV},
+		stage = .VERTEX,
+		num_samplers = 0,
+		num_storage_buffers = 0,
+  		num_storage_textures = 0,
+  		num_uniform_buffers = 0,
+	}
+
+	fragment_shader_create_info : sdl.GPUShaderCreateInfo	= {
+		code = raw_data(fragment_shader_src),
+		code_size = len(fragment_shader_src),
+		entrypoint = "main",
+		format = {.SPIRV},
+		stage = .FRAGMENT,
+		num_samplers = 0,
+		num_storage_buffers = 0,
+  		num_storage_textures = 0,
+  		num_uniform_buffers = 0,
+	}
+
+	vertex_shader := sdl.CreateGPUShader(g_device, vertex_shader_create_info);
+	if vertex_shader == nil {
+		fmt.println("[ERROR] Failed to create vertex shader")
+		return
+	}
+	defer sdl.ReleaseGPUShader(g_device, vertex_shader)
+
+	fragment_shader := sdl.CreateGPUShader(g_device, fragment_shader_create_info);
+	if fragment_shader == nil {
+		fmt.println("[ERROR] Failed to create fragment shader")
+		return
+	}
+	defer sdl.ReleaseGPUShader(g_device, fragment_shader)
+
+	delete(vertex_shader_src)
+	delete(fragment_shader_src)
+
+
+	vertex_buffer_desc : sdl.GPUVertexBufferDescription = {
+		slot = 0,
+		input_rate = .VERTEX,
+		instance_step_rate = 0,
+		pitch = 7 * size_of(f32),
+	}
+
+	graphics_pipeline_create_info : sdl.GPUGraphicsPipelineCreateInfo = {
+		vertex_shader = vertex_shader,
+		fragment_shader = fragment_shader,
+		primitive_type = .TRIANGLELIST
+	}
+
+	for {
+		if poll_events() {
+			fmt.println("[INFO] Window closing")
+			return
+		}
+
+		cmd_buffer := sdl.AcquireGPUCommandBuffer(g_device)
+		if cmd_buffer == nil {
+			fmt.println("[ERROR] Failed to acquire command buffer")
+			return
+		}
+
+		swapchain_texture : ^sdl.GPUTexture
+		width, height : u32
+
+		if !sdl.WaitAndAcquireGPUSwapchainTexture(cmd_buffer, g_window, &swapchain_texture, &width, &height) {
+			fmt.println("[INFO] No swapchain")
+			if !sdl.SubmitGPUCommandBuffer(cmd_buffer) {
+				fmt.println("[ERROR] Failed to submit command buffer")
+				return
+			}
+			continue
+		}
+		
+		colour_target : sdl.GPUColorTargetInfo = {
+			clear_color = {0.7, 0.7, 0.7, 1.0},
+			load_op = .CLEAR,
+			store_op = .STORE,
+			texture = swapchain_texture,
+		}
+
+		render_pass := sdl.BeginGPURenderPass(cmd_buffer, &colour_target, 1, nil)
+
+		if render_pass == nil {
+			fmt.println("[ERROR] Failed to begin render pass")
+			return
+		}
+
+		sdl.EndGPURenderPass(render_pass)
+
+		if !sdl.SubmitGPUCommandBuffer(cmd_buffer) {
+			fmt.println("[ERROR] Failed to submit command buffer")
+			return
+		}
+	}
+
+	if (true) do return
+
 	default_settings()
 
 	update_screen_size(g_settings.default_window_width, g_settings.default_window_height)

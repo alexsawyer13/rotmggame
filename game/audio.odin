@@ -11,7 +11,7 @@ make_audio :: proc() -> bool {
 		return false
 	}
 
-	ma.context_get_devices(&g_audio.ctx, )
+//	ma.context_get_devices(&g_audio.ctx, )
 
 	return true
 }
