@@ -153,10 +153,15 @@ poll_events :: #force_inline proc() -> bool {
 }
 
 main :: proc() {
+	fmt.println("Hello, world!")
+
+	if true do return
+
 	if !sdl.Init({}) {
-		fmt.print("[ERROR] Failed to initialise SDL")
+		fmt.println("[ERROR] Failed to initialise SDL")
 		return
 	}
+	fmt.println("[INFO] Initialised SDL")
 
 	g_window := sdl.CreateWindow(
 		"Test window!",
@@ -164,6 +169,7 @@ main :: proc() {
 		g_settings.default_window_height,
 		{.RESIZABLE}
 	)
+
 	if g_window == nil {
 		fmt.println("[ERROR] Failed to create window")
 		return
