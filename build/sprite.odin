@@ -5,12 +5,36 @@ import "core:fmt"
 import "core:image/png"
 
 generate_sprite_file :: proc() -> bool {
-    os_err : os.Error
-    sprite_dir : os.Handle
-    files : []os.File_Info
+
+	Image :: struct {
+		name   : string,
+		width  : int,
+		height : int,
+	}
+
+	make_image :: proc(name : String) {
+
+	}
+
+	delete_image :: proc() {
+
+	}
+
+
+	file : File
+	file_init(&file, "game/gen_sprite.odin")
+	file_set_current(&file)
 
     fmt.println("----- Generating sprite.odin -----")
 
+	os_err : os.Error
+	sprite_dir : os.Handle
+	files : []os.File_Info
+
+	images := make([dynamic]Image)
+	defer delete(images)
+
+	// Get all files in sprite directory
     sprite_dir, os_err = os.open("sprites")
     if os_err != nil {
         fmt.println("Failed to open game directory")
@@ -30,16 +54,28 @@ generate_sprite_file :: proc() -> bool {
         delete(files)
     }
 
-    for file in files {
-        fmt.println(file.name)
-        bytes, err := os.read_entire_file(file.fullpath)
-        if err {
-            fmt.println("Failed to read ", file.fullpath)
+	// Loop through all files and get info about them
+    for f in files {
+		image, err := png.load_from_file(f.fullpath, allocator = context.temp_allocator)
+        if err != nil {
+            fmt.println("Failed to read ", f.fullpath)
             return false
         }
-        header, success := png.read_header(raw_data(bytes))
-        fmt.println(file.name, " ", header.width, " ", header.height)
+		append(&images, Image {
+			name = f.name,
+			width = image.width,
+			height = image.height
+		})
+		free_all(context.temp_allocator)
     }
+
+	// Write file!
+
+	for image in images {
+		fmt.println(image.name, " ", image.width, "x", image.height, sep = "")
+	}
+
+	file_finish(&file)
 
     return true
 }

@@ -38,11 +38,15 @@ generate_entity_file :: proc() -> bool {
         delete(c.array_name)
     }
 
+	file : File
+	file_init(&file, "game/gen_entity.odin")
+	file_set_current(&file)
+
+	fmt.println("----- Generating entity.odin -----")
+
     os_err : os.Error
     game_dir : os.Handle
-    files : []os.File_Info
-
-    fmt.println("----- Generating entity.odin -----")
+    game_files : []os.File_Info
 
     // Get a list of files in game directory
     game_dir, os_err = os.open("game")
@@ -52,16 +56,16 @@ generate_entity_file :: proc() -> bool {
     }
     defer os.close(game_dir)
 
-    files, os_err = os.read_dir(game_dir, -1)
+    game_files, os_err = os.read_dir(game_dir, -1)
     if os_err != nil {
         fmt.println("Failed to read game directory")
         return false
     }
     defer {
-        for file in files {
+        for file in game_files {
             delete(file.fullpath)
         }
-        delete(files)
+        delete(game_files)
     }
 
     components := make([dynamic]Component)
@@ -73,9 +77,9 @@ generate_entity_file :: proc() -> bool {
     }
 
     // Get components from the files
-    for file in files {
-        fmt.println("Reading file: ", file.name)
-        bytes, file_success := os.read_entire_file(file.fullpath, context.temp_allocator)
+    for f in game_files {
+        fmt.println("Reading file:", f.name)
+        bytes, file_success := os.read_entire_file(f.fullpath, context.temp_allocator)
         contents := string(bytes)
 
         iter, reg_err := regex.create_iterator(contents, "([a-zA-Z_]*)_Component :: struct", {}, context.temp_allocator)
@@ -85,7 +89,7 @@ generate_entity_file :: proc() -> bool {
             capture, index, ok := regex.match_iterator(&iter)
             if !ok do break
 
-            fmt.println("Found component: ", capture.groups[1])
+            fmt.println("Found component:", capture.groups[1])
             append(&components, make_component(capture.groups[1]))
         }
 
@@ -220,7 +224,7 @@ generate_entity_file :: proc() -> bool {
 	    writeln("}")
     }
 
-    os.write_entire_file("game/gen_entity.odin", sb.buf[:])
+	file_finish(&file)
 
     return true
 }

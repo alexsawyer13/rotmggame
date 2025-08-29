@@ -1,29 +1,43 @@
 package build
 
+import "core:os"
 import "core:fmt"
 import "core:strings"
 
-// Global stringbuilder for building files
-// everywhere with write functions. 
-sb : strings.Builder
-
-writeln :: proc(args : ..string) {
-    for arg in args {
-        strings.write_string(&sb, arg)
-    }
-    strings.write_string(&sb, "\n")
+File :: struct {
+	string_builder : strings.Builder,
+	path           : string
 }
 
-@(private)
-clear :: proc() {
-    strings.builder_reset(&sb)
-    free_all(context.temp_allocator)
+file_init :: proc(file : ^File, path : string) {
+	file.string_builder = strings.builder_make_none()
+	file.path = path
+}
+
+file_finish :: proc(file : ^File) {
+	os.write_entire_file(file.path, file.string_builder.buf[:])
+	strings.builder_destroy(&file.string_builder)
+	if current_file == file do current_file = nil
+}
+
+file_set_current :: proc(file : ^File) {
+	current_file = file
+}
+
+// Global file so you don't have to pass
+// file in as a parameter everywhere
+current_file : ^File
+
+writeln :: proc(args : ..string) {
+	if current_file == nil do return
+
+    for arg in args {
+        strings.write_string(&current_file.string_builder, arg)
+    }
+    strings.write_string(&current_file.string_builder, "\n")
 }
 
 main :: proc() {
-    sb = strings.builder_make_none()
-    defer strings.builder_destroy(&sb)
-
-    if !generate_entity_file() do return; clear()
-    if !generate_sprite_file() do return; clear()
+    generate_entity_file()
+    generate_sprite_file()
 }
