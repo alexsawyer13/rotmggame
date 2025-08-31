@@ -7,13 +7,16 @@ import "core:image/png"
 generate_sprite_file :: proc() -> bool {
 
 	Image :: struct {
-		name   : string,
 		width  : int,
 		height : int,
+
+		enum_name : string,
+		full_path : string,
 	}
 
-	make_image :: proc(name : String) {
-
+	make_image :: proc(name : string) {
+		image : Image
+		image.enum_name = "test"
 	}
 
 	delete_image :: proc() {
@@ -69,11 +72,13 @@ generate_sprite_file :: proc() -> bool {
 		free_all(context.temp_allocator)
     }
 
-	// Write file!
+	// Generate file!
 
 	for image in images {
 		fmt.println(image.name, " ", image.width, "x", image.height, sep = "")
 	}
+
+	// Write file to disk
 
 	file_finish(&file)
 
