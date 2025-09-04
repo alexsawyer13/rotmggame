@@ -155,8 +155,6 @@ poll_events :: #force_inline proc() -> bool {
 main :: proc() {
 	fmt.println("Hello, world!")
 
-	if true do return
-
 	if !sdl.Init({}) {
 		fmt.println("[ERROR] Failed to initialise SDL")
 		return
@@ -283,14 +281,12 @@ main :: proc() {
 		fmt.println("[ERROR] Failed to create vertex shader")
 		return
 	}
-	defer sdl.ReleaseGPUShader(g_device, vertex_shader)
 
 	fragment_shader := sdl.CreateGPUShader(g_device, fragment_shader_create_info);
 	if fragment_shader == nil {
 		fmt.println("[ERROR] Failed to create fragment shader")
 		return
 	}
-	defer sdl.ReleaseGPUShader(g_device, fragment_shader)
 
 	delete(vertex_shader_src)
 	delete(fragment_shader_src)
@@ -308,6 +304,50 @@ main :: proc() {
 		fragment_shader = fragment_shader,
 		primitive_type = .TRIANGLELIST
 	}
+
+	vertex_buffer_description : sdl.GPUVertexBufferDescription = {
+		slot = 0,
+		input_rate = .VERTEX,
+		instance_step_rate = 0,
+		pitch = 7 * size_of(f32)
+	}
+
+	graphics_pipeline_create_info.vertex_input_state.num_vertex_buffers = 1
+	graphics_pipeline_create_info.vertex_input_state.vertex_buffer_descriptions = &vertex_buffer_description
+
+	vertex_attributes : [2]sdl.GPUVertexAttribute = {
+			sdl.GPUVertexAttribute { // a_position
+				buffer_slot = 0,
+				location = 0,
+				format = .FLOAT3,
+				offset = 0
+			},
+			sdl.GPUVertexAttribute { // a_colour
+				buffer_slot = 0,
+				location = 1,
+				format = .FLOAT4,
+				offset = size_of(f32) * 3
+			}
+	}
+
+	graphics_pipeline_create_info.vertex_input_state.num_vertex_attributes = 2
+	graphics_pipeline_create_info.vertex_input_state.vertex_attributes = raw_data(&vertex_attributes)
+
+	colour_target_description : sdl.GPUColorTargetDescription = {
+		format = sdl.GetGPUSwapchainTextureFormat(g_device, g_window)
+	}
+
+	graphics_pipeline_create_info.target_info.num_color_targets = 1
+	graphics_pipeline_create_info.target_info.color_target_descriptions = &colour_target_description
+
+	graphics_pipeline := sdl.CreateGPUGraphicsPipeline(
+		g_device,
+		graphics_pipeline_create_info
+	)
+	defer sdl.ReleaseGPUGraphicsPipeline(g_device, graphics_pipeline)
+
+	sdl.ReleaseGPUShader(g_device, vertex_shader)
+	sdl.ReleaseGPUShader(g_device, fragment_shader)
 
 	for {
 		if poll_events() {
