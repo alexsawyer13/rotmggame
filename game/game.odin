@@ -387,6 +387,17 @@ main :: proc() {
 			return
 		}
 
+		sdl.BindGPUGraphicsPipeline(render_pass, graphics_pipeline)
+
+		buffer_bindings : sdl.GPUBufferBinding = {
+			buffer = vertex_buffer,
+			offset = 0
+		}
+
+		sdl.BindGPUVertexBuffers(render_pass, 0, &buffer_bindings, 1)
+
+		sdl.DrawGPUPrimitives(render_pass, 3, 1, 0, 0)
+
 		sdl.EndGPURenderPass(render_pass)
 
 		if !sdl.SubmitGPUCommandBuffer(cmd_buffer) {
